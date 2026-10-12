@@ -1,0 +1,42 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import {
+  formatFullDate,
+  getPublishedWriting,
+  isExternal,
+  readingMinutes,
+  type WritingEntry,
+} from '../../lib/writing';
+
+// One page per post written on this site. Entries with an external link
+// (like the Contrary Research report) link out instead and get no page here.
+export async function getStaticPaths() {
+  const posts = (await getPublishedWriting()).filter((entry) => !isExternal(entry));
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: WritingEntry;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<Base title={entry.data.title} description={entry.data.summary ?? undefined} active="writing">
+  <section class="view">
+    <div class="post-head">
+      <a class="back" href="/writing/">← All writing</a>
+      <h1 class="display display--post">{entry.data.title}</h1>
+      <p class="post-meta">
+        <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatFullDate(entry.data.date)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{readingMinutes(entry.body)} min read</span>
+      </p>
+    </div>
+
+    <article class="prose">
+      <Content />
+    </article>
+  </section>
+</Base>

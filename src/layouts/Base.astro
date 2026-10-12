@@ -1,0 +1,143 @@
+---
+import '../styles/global.css';
+import site from '../data/site.json';
+
+interface Props {
+  title?: string;
+  description?: string;
+  active?: 'about' | 'writing' | null;
+}
+
+const { title, description = site.intro, active = null } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : site.name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const links = [
+  site.linkedin && { label: 'LinkedIn', href: site.linkedin },
+  site.x && { label: 'X', href: site.x },
+].filter(Boolean) as { label: string; href: string }[];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="theme-color" content="#212125" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Fonts. To change a font, edit this link and the names in src/styles/global.css. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400..700;1,400..700&family=Courier+Prime:wght@400;700&family=Staatliches&display=swap"
+    />
+
+    <script is:inline>
+      try {
+        var saved = localStorage.getItem('ek-theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="side-top">
+          <a class="brand" href="/">
+            <span class="brand-mark" aria-hidden="true">{site.initials}</span>
+            <span class="brand-name">{site.name}</span>
+          </a>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"></path></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+          </button>
+        </div>
+
+        <hr class="rule" />
+
+        <p class="side-intro">{site.intro}</p>
+
+        <hr class="rule" />
+
+        <nav class="side-nav" aria-label="Main">
+          <a href="/" aria-current={active === 'about' ? 'page' : undefined}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+            About me
+          </a>
+          <a href="/writing/" aria-current={active === 'writing' ? 'page' : undefined}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+            Writing
+          </a>
+        </nav>
+
+        <div class="side-bottom">
+          <div class="contact-links">
+            {site.email && (
+              <a class="contact-link" href={`mailto:${site.email}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
+                {site.email}
+              </a>
+            )}
+            {links.map((link) => (
+              <a class="contact-link" href={link.href} target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+                {link.label}
+              </a>
+            ))}
+          </div>
+          {site.disclaimer && <p>{site.disclaimer}</p>}
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <slot />
+
+          <footer class="page-foot">
+            <div class="contact-links">
+              {site.email && (
+                <a class="contact-link" href={`mailto:${site.email}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
+                  {site.email}
+                </a>
+              )}
+              {links.map((link) => (
+                <a class="contact-link" href={link.href} target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            {site.disclaimer && <p>{site.disclaimer}</p>}
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var toggle = document.getElementById('theme-toggle');
+        function syncLabel() {
+          var light = root.getAttribute('data-theme') === 'light';
+          toggle.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+        }
+        toggle.addEventListener('click', function () {
+          var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+          root.setAttribute('data-theme', next);
+          try { localStorage.setItem('ek-theme', next); } catch (e) {}
+          syncLabel();
+        });
+        syncLabel();
+      })();
+    </script>
+  </body>
+</html>

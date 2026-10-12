@@ -1,0 +1,49 @@
+---
+import {
+  entryHref,
+  formatMonth,
+  isExternal,
+  readingMinutes,
+  type WritingEntry,
+} from '../lib/writing';
+
+interface Props {
+  entries: WritingEntry[];
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { entries, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+---
+<ul class="entries">
+  {entries.map((entry) => {
+    const external = isExternal(entry);
+    return (
+      <li class="entry">
+        <time class="entry-date" datetime={entry.data.date.toISOString().slice(0, 10)}>
+          {formatMonth(entry.data.date)}
+        </time>
+        <div class="entry-body">
+          <Heading class="entry-heading">
+            <a
+              class="entry-title"
+              href={entryHref(entry)}
+              target={external ? '_blank' : undefined}
+              rel={external ? 'noopener' : undefined}
+            >
+              {entry.data.title}
+            </a>
+          </Heading>
+          {entry.data.summary && <p class="entry-desc">{entry.data.summary}</p>}
+          <p class="entry-meta">
+            {external ? (
+              <span class="source">{entry.data.publication || 'Read'} ↗</span>
+            ) : (
+              <span>{readingMinutes(entry.body)} min read</span>
+            )}
+          </p>
+        </div>
+      </li>
+    );
+  })}
+</ul>

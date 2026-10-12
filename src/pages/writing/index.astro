@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import EntryList from '../../components/EntryList.astro';
+import site from '../../data/site.json';
+import { getPublishedWriting } from '../../lib/writing';
+
+const entries = await getPublishedWriting();
+---
+<Base title="Writing" description={site.writingIntro} active="writing">
+  <section class="view">
+    <div class="intro">
+      <h1 class="display">Writing</h1>
+      {site.writingIntro && <p class="subtitle">{site.writingIntro}</p>}
+    </div>
+
+    {entries.length > 0
+      ? <EntryList entries={entries} />
+      : <p class="empty">Nothing published yet.</p>}
+  </section>
+</Base>
