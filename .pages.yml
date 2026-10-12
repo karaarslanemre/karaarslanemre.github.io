@@ -1,0 +1,96 @@
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: writing
+    label: Writing
+    description: Every entry in your Writing log. Add a link to point to a piece published elsewhere, or leave it empty and write the post here.
+    type: collection
+    path: src/content/writing
+    filename: "{primary}.md"
+    view:
+      fields: [title, date, publication, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: summary
+        label: One-line summary
+        description: Shown under the title in the Writing log.
+        type: text
+      - name: link
+        label: External link
+        description: For pieces published somewhere else, paste the full URL. Leave empty to publish the post on your own site.
+        type: string
+      - name: publication
+        label: Published in
+        description: Where the piece ran, e.g. Contrary Research. Only shown when there's an external link.
+        type: string
+      - name: draft
+        label: Draft
+        description: Tick to hide this entry from the live site.
+        type: boolean
+        default: false
+      - name: body
+        label: Post
+        description: Leave empty for pieces published elsewhere.
+        type: rich-text
+
+  - name: about
+    label: About me
+    type: file
+    path: src/data/about.md
+    fields:
+      - name: title
+        label: Page heading
+        type: string
+      - name: body
+        label: About text
+        type: rich-text
+
+  - name: settings
+    label: Site settings
+    type: file
+    path: src/data/site.json
+    format: json
+    fields:
+      - name: name
+        label: Your name
+        type: string
+        required: true
+      - name: initials
+        label: Initials
+        description: Shown in the small badge next to your name.
+        type: string
+      - name: intro
+        label: Sidebar intro
+        description: The short line under your name in the sidebar.
+        type: text
+      - name: writingIntro
+        label: Writing page subtitle
+        type: text
+      - name: email
+        label: Email
+        type: string
+      - name: linkedin
+        label: LinkedIn URL
+        description: Full link, e.g. https://www.linkedin.com/in/your-handle. Leave empty to hide.
+        type: string
+      - name: x
+        label: X URL
+        description: Full link, e.g. https://x.com/your-handle. Leave empty to hide.
+        type: string
+      - name: disclaimer
+        label: Footer note
+        type: string
