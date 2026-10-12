@@ -1,7 +1,7 @@
 ---
+import PixelIcon from './PixelIcon.astro';
 import {
   entryHref,
-  formatMonth,
   isExternal,
   readingMinutes,
   type WritingEntry,
@@ -9,41 +9,60 @@ import {
 
 interface Props {
   entries: WritingEntry[];
+  /** Total number of published entries, used for the #001-style numbers. */
+  total?: number;
   headingLevel?: 'h2' | 'h3';
+  /** Adds a "next entry loading" tile at the end. */
+  showNext?: boolean;
 }
 
-const { entries, headingLevel = 'h2' } = Astro.props;
+const { entries, total = entries.length, headingLevel = 'h2', showNext = false } = Astro.props;
 const Heading = headingLevel;
+const COLORS = 7;
+
+// Dates like 09.22.26
+const shortDate = (d: Date) =>
+  [d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCFullYear() % 100]
+    .map((n) => String(n).padStart(2, '0'))
+    .join('.');
 ---
-<ul class="entries">
-  {entries.map((entry) => {
+<ul class="tiles">
+  {entries.map((entry, i) => {
+    // Entries arrive newest first; the oldest is #001, so numbers and colors
+    // stay the same as new pieces are added.
+    const number = total - i;
     const external = isExternal(entry);
     return (
-      <li class="entry">
-        <time class="entry-date" datetime={entry.data.date.toISOString().slice(0, 10)}>
-          {formatMonth(entry.data.date)}
-        </time>
-        <div class="entry-body">
-          <Heading class="entry-heading">
-            <a
-              class="entry-title"
-              href={entryHref(entry)}
-              target={external ? '_blank' : undefined}
-              rel={external ? 'noopener' : undefined}
-            >
-              {entry.data.title}
-            </a>
-          </Heading>
-          {entry.data.summary && <p class="entry-desc">{entry.data.summary}</p>}
-          <p class="entry-meta">
-            {external ? (
-              <span class="source">{entry.data.publication || 'Read'} ↗</span>
-            ) : (
-              <span>{readingMinutes(entry.body)} min read</span>
-            )}
-          </p>
-        </div>
+      <li class:list={['tile', `tile-c${(number - 1) % COLORS}`]}>
+        <a
+          class="tile-link"
+          href={entryHref(entry)}
+          target={external ? '_blank' : undefined}
+          rel={external ? 'noopener' : undefined}
+        >
+          <div class="tile-top">
+            <span>#{String(number).padStart(3, '0')}</span>
+            <time datetime={entry.data.date.toISOString().slice(0, 10)}>{shortDate(entry.data.date)}</time>
+          </div>
+          <div class="tile-body">
+            <p class="tile-kicker">
+              {external
+                ? `${entry.data.publication || 'Elsewhere'} ↗`
+                : `Post · ${readingMinutes(entry.body)} min read`}
+            </p>
+            <Heading class="tile-title">{entry.data.title}</Heading>
+            {entry.data.summary && <p class="tile-desc">{entry.data.summary}</p>}
+          </div>
+        </a>
       </li>
     );
   })}
+  {showNext && (
+    <li class="tile" aria-hidden="true">
+      <div class="tile-next">
+        <PixelIcon name="chart" />
+        <span>Next entry loading<span class="cursor">_</span></span>
+      </div>
+    </li>
+  )}
 </ul>

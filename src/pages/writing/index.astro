@@ -13,8 +13,6 @@ const entries = await getPublishedWriting();
       {site.writingIntro && <p class="subtitle">{site.writingIntro}</p>}
     </div>
 
-    {entries.length > 0
-      ? <EntryList entries={entries} />
-      : <p class="empty">Nothing published yet.</p>}
+    <EntryList entries={entries} showNext />
   </section>
 </Base>

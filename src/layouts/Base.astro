@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import site from '../data/site.json';
+import PixelIcon from '../components/PixelIcon.astro';
 
 interface Props {
   title?: string;
@@ -12,10 +13,17 @@ const { title, description = site.intro, active = null } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
+// Accept links typed with or without "https://".
+const toUrl = (value?: string) => {
+  const v = (value ?? '').trim();
+  if (!v) return '';
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+};
+
 const links = [
-  site.linkedin && { label: 'LinkedIn', href: site.linkedin },
-  site.x && { label: 'X', href: site.x },
-].filter(Boolean) as { label: string; href: string }[];
+  { label: 'LinkedIn', href: toUrl(site.linkedin) },
+  { label: 'X', href: toUrl(site.x) },
+].filter((link) => link.href);
 ---
 <!doctype html>
 <html lang="en">
@@ -29,7 +37,7 @@ const links = [
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="theme-color" content="#212125" />
+    <meta name="theme-color" content="#FFFFFF" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <!-- Fonts. To change a font, edit this link and the names in src/styles/global.css. -->
@@ -37,7 +45,7 @@ const links = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400..700;1,400..700&family=Courier+Prime:wght@400;700&family=Staatliches&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;700&family=VT323&display=swap"
     />
 
     <script is:inline>
@@ -52,28 +60,26 @@ const links = [
       <aside class="sidebar">
         <div class="side-top">
           <a class="brand" href="/">
-            <span class="brand-mark" aria-hidden="true">{site.initials}</span>
+            <PixelIcon name="chart" />
             <span class="brand-name">{site.name}</span>
           </a>
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme">
-            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"></path></svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme">
+            <PixelIcon name="sun" class="icon-sun" />
+            <PixelIcon name="moon" class="icon-moon" />
           </button>
         </div>
 
         <hr class="rule" />
 
-        <p class="side-intro">{site.intro}</p>
-
-        <hr class="rule" />
+        {site.intro && <p class="side-intro">{site.intro}</p>}
 
         <nav class="side-nav" aria-label="Main">
           <a href="/" aria-current={active === 'about' ? 'page' : undefined}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+            <PixelIcon name="person" />
             About me
           </a>
           <a href="/writing/" aria-current={active === 'writing' ? 'page' : undefined}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+            <PixelIcon name="page" />
             Writing
           </a>
         </nav>
@@ -82,13 +88,13 @@ const links = [
           <div class="contact-links">
             {site.email && (
               <a class="contact-link" href={`mailto:${site.email}`}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
+                <PixelIcon name="mail" />
                 {site.email}
               </a>
             )}
             {links.map((link) => (
               <a class="contact-link" href={link.href} target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+                <PixelIcon name="link" />
                 {link.label}
               </a>
             ))}
@@ -105,13 +111,13 @@ const links = [
             <div class="contact-links">
               {site.email && (
                 <a class="contact-link" href={`mailto:${site.email}`}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
+                  <PixelIcon name="mail" />
                   {site.email}
                 </a>
               )}
               {links.map((link) => (
                 <a class="contact-link" href={link.href} target="_blank" rel="noopener">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+                  <PixelIcon name="link" />
                   {link.label}
                 </a>
               ))}
@@ -127,11 +133,11 @@ const links = [
         var root = document.documentElement;
         var toggle = document.getElementById('theme-toggle');
         function syncLabel() {
-          var light = root.getAttribute('data-theme') === 'light';
-          toggle.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+          var dark = root.getAttribute('data-theme') === 'dark';
+          toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
         }
         toggle.addEventListener('click', function () {
-          var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+          var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
           root.setAttribute('data-theme', next);
           try { localStorage.setItem('ek-theme', next); } catch (e) {}
           syncLabel();

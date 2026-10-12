@@ -4,7 +4,8 @@ import EntryList from '../components/EntryList.astro';
 import { Content as AboutText, frontmatter } from '../data/about.md';
 import { getPublishedWriting } from '../lib/writing';
 
-const latest = (await getPublishedWriting()).slice(0, 3);
+const all = await getPublishedWriting();
+const latest = all.slice(0, 2);
 const heading = frontmatter.title || 'About me';
 ---
 <Base active="about">
@@ -19,9 +20,9 @@ const heading = frontmatter.title || 'About me';
       <section class="section" aria-labelledby="latest-heading">
         <div class="section-head">
           <h2 class="h2" id="latest-heading">Latest writing</h2>
-          <a class="button-outline" href="/writing/">View all</a>
+          <a class="bubble" href="/writing/">View all</a>
         </div>
-        <EntryList entries={latest} headingLevel="h3" />
+        <EntryList entries={latest} total={all.length} headingLevel="h3" />
       </section>
     )}
   </section>
