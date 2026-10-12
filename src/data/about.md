@@ -1,4 +1,4 @@
 ---
 title: About Me
 ---
-I'm Emre Karaarslan. I'm a senior at Wharton, studying finance and statistics. I'll be joining PJT Partners post-grad, working on Tech M&A. Previously, I was a Research Fellow at Contrary. Curious about technology!
+I'm a senior at Wharton, studying finance + statistics. I'll be joining PJT Partners to work on Tech M&A deals in San Francisco and was previously a Research Fellow at Contrary. 
