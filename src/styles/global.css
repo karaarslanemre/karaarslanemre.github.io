@@ -41,7 +41,7 @@
   --fs-small: 0.9375rem;
   --fs-body: 1.125rem;
   --fs-lead: 1.25rem;
-  --fs-sub: 1.25rem;
+  --fs-sub: 1.875rem;
   --fs-h2: 2.75rem;
   --fs-tile-title: 2rem;
   --fs-display: clamp(3.75rem, 2.6rem + 4.2vw, 6.25rem);
@@ -225,7 +225,7 @@ a:focus-visible, button:focus-visible {
   text-wrap: balance;
 }
 .display--post { font-size: var(--fs-display-post); line-height: 0.9; }
-.subtitle { font-size: var(--fs-sub); line-height: 1.5; color: var(--muted); text-wrap: balance; }
+.subtitle { font-family: var(--font-display); font-size: var(--fs-sub); line-height: 1.1; color: var(--muted); text-wrap: balance; }
 .lead { display: flex; flex-direction: column; gap: 1em; font-size: var(--fs-lead); line-height: 1.65; }
 
 .lead a, .prose a {
@@ -451,7 +451,7 @@ a:focus-visible, button:focus-visible {
     padding-top: 1.5rem;
     background: repeating-linear-gradient(90deg, var(--ink) 0 var(--px), transparent var(--px) calc(var(--px) * 2)) top left / 100% var(--px) no-repeat;
   }
-  :root { --fs-lead: 1.1875rem; --fs-sub: 1.125rem; --fs-h2: 2.375rem; }
+  :root { --fs-lead: 1.1875rem; --fs-sub: 1.5rem; --fs-h2: 2.375rem; }
 }
 @media (max-width: 40rem) {
   .prose th, .prose td { padding-right: 0.5rem; }
