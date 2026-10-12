@@ -1,4 +1,4 @@
 ---
-title: About me
+title: About Me
 ---
-I'm Emre Karaarslan. Currently a senior at Wharton. I was previously a [Research Fellow](https://research.contrary.com/company/fal-ai) at Contrary and spent this past summer working on Tech M&A deals at PJT Partners. Looking to learn about all things technology and finance.
+I'm Emre Karaarslan. I'm a senior at Wharton, studying finance and statistics. I'll be joining PJT Partners post-grad, working on Tech M&A. Previously, I was a Research Fellow at Contrary. Curious about technology!
