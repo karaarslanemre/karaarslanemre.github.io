@@ -3,7 +3,7 @@ title: Actuators
 date: 2026-10-29
 summary: Evolving U.S. policy drives demand for the on-shoring of robotics
   component manufacturing.
-draft: true
+draft: false
 ---
 A CPU is oddly cold. I remember being surprised by the feeling when I first built my PC. The moment was the culmination of months of research and planning, and dropping the CPU into place was the first step. When I finally watched it power on, I felt an immense sense of pride. I had brought something to life.
 
