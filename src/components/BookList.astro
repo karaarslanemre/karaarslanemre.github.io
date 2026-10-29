@@ -1,0 +1,31 @@
+---
+import BookCover from './BookCover.astro';
+import { cleanQuote, type BookWithCover } from '../lib/books';
+
+interface Props {
+  books: BookWithCover[];
+}
+
+const { books } = Astro.props;
+---
+<ul class="book-list">
+  {books.map((book) => {
+    const quote = cleanQuote(book.data.quote);
+    return (
+      <li class="book">
+        <BookCover book={book} />
+        <div class:list={['book-text', !quote && 'book-text--plain']}>
+          {quote && (
+            <blockquote class="book-quote">
+              <p>“{quote}”</p>
+            </blockquote>
+          )}
+          <p class="book-meta">
+            <span class="title">{book.data.title}</span>
+            {book.data.author && <span class="author">{book.data.author}</span>}
+          </p>
+        </div>
+      </li>
+    );
+  })}
+</ul>

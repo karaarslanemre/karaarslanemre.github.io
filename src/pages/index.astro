@@ -1,29 +1,59 @@
 ---
 import Base from '../layouts/Base.astro';
-import EntryList from '../components/EntryList.astro';
+import Band from '../components/Band.astro';
+import Figure from '../components/Figure.astro';
+import MarginArt from '../components/MarginArt.astro';
+import WritingPanels from '../components/WritingPanels.astro';
+import BookCover from '../components/BookCover.astro';
+import site from '../data/site.json';
 import { Content as AboutText, frontmatter } from '../data/about.md';
 import { getPublishedWriting } from '../lib/writing';
+import { getBooks, isReading } from '../lib/books';
 
-const all = await getPublishedWriting();
-const latest = all.slice(0, 2);
-const heading = frontmatter.title || 'About me';
+const writing = await getPublishedWriting();
+const books = await getBooks();
+const shelf = [...books.filter(isReading), ...books.filter((b) => !isReading(b))].slice(0, 6);
+const headline = (frontmatter.headline ?? '').trim() || (frontmatter.title ?? '').trim() || 'About Me';
 ---
 <Base active="about">
-  <section class="view">
-    <h1 class="display">{heading}</h1>
-
-    <div class="lead">
-      <AboutText />
+  <Band hero center>
+    <Fragment slot="margin"><MarginArt kind="chart" /></Fragment>
+    <div class="hero-wrap">
+      <h1 class="hero">{headline}</h1>
+      <Figure kind="orbit" />
     </div>
+    <div class="lead"><AboutText /></div>
+  </Band>
 
-    {latest.length > 0 && (
-      <section class="section" aria-labelledby="latest-heading">
-        <div class="section-head">
-          <h2 class="h2" id="latest-heading">Latest writing</h2>
-          <a class="bubble" href="/writing/">View all</a>
-        </div>
-        <EntryList entries={latest} total={all.length} headingLevel="h3" />
-      </section>
-    )}
-  </section>
+  {writing.length > 0 && (
+    <Band lines="a">
+      <div class="band-head">
+        <h2 class="h2">Writing.</h2>
+        <a class="see-all" href="/writing/">See all writing</a>
+      </div>
+      <WritingPanels entries={writing.slice(0, 3)} total={writing.length} headingLevel="h3" />
+    </Band>
+  )}
+
+  {shelf.length > 0 && (
+    <Band lines="b">
+      <div class="band-head">
+        <h2 class="h2">Books.</h2>
+        <a class="see-all" href="/books/">See all books</a>
+      </div>
+      <ul class="shelf">
+        {shelf.map((book) => (
+          <li>
+            <a href="/books/">
+              <BookCover book={book} />
+              <span class="shelf-title">
+                {book.data.title}
+                {isReading(book) && <span class="shelf-state"> · Reading</span>}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Band>
+  )}
 </Base>

@@ -1,18 +1,25 @@
 ---
 import Base from '../../layouts/Base.astro';
-import EntryList from '../../components/EntryList.astro';
+import Band from '../../components/Band.astro';
+import Figure from '../../components/Figure.astro';
+import MarginArt from '../../components/MarginArt.astro';
+import WritingPanels from '../../components/WritingPanels.astro';
 import site from '../../data/site.json';
 import { getPublishedWriting } from '../../lib/writing';
 
 const entries = await getPublishedWriting();
 ---
 <Base title="Writing" description={site.writingIntro} active="writing">
-  <section class="view">
-    <div class="intro">
-      <h1 class="display">Writing</h1>
-      {site.writingIntro && <p class="subtitle">{site.writingIntro}</p>}
-    </div>
+  <Band hero center>
+    <Fragment slot="note"><p>{site.writingIntro}</p></Fragment>
+    <Fragment slot="margin"><MarginArt kind="pages" /></Fragment>
+    <h1 class="hero">Writing</h1>
+    <Figure kind="chart" />
+  </Band>
 
-    <EntryList entries={entries} showNext />
-  </section>
+  <Band lines="a">
+    {entries.length > 0
+      ? <WritingPanels entries={entries} />
+      : <p class="empty">Nothing published yet.</p>}
+  </Band>
 </Base>

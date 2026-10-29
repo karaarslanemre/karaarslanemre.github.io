@@ -1,15 +1,16 @@
 ---
 import '../styles/global.css';
 import site from '../data/site.json';
-import PixelIcon from '../components/PixelIcon.astro';
+import Band from '../components/Band.astro';
+import SiteMap from '../components/SiteMap.astro';
 
 interface Props {
   title?: string;
   description?: string;
-  active?: 'about' | 'writing' | null;
+  active?: 'about' | 'writing' | 'books' | null;
 }
 
-const { title, description = site.intro, active = null } = Astro.props;
+const { title, description = site.writingIntro, active = null } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
@@ -19,11 +20,16 @@ const toUrl = (value?: string) => {
   if (!v) return '';
   return /^https?:\/\//i.test(v) ? v : `https://${v}`;
 };
-
 const links = [
-  { label: 'LinkedIn', href: toUrl(site.linkedin) },
-  { label: 'X', href: toUrl(site.x) },
+  { label: 'LinkedIn', href: toUrl((site as any).linkedin) },
+  { label: 'X', href: toUrl((site as any).x) },
 ].filter((link) => link.href);
+
+const nav = [
+  { key: 'about', href: '/', label: 'About Me' },
+  { key: 'writing', href: '/writing/', label: 'Writing' },
+  { key: 'books', href: '/books/', label: 'Books' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -31,13 +37,13 @@ const links = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    {description && <meta name="description" content={description} />}
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
+    {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="theme-color" content="#EBEBEA" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <!-- Fonts. To change a font, edit this link and the names in src/styles/global.css. -->
@@ -45,105 +51,37 @@ const links = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;700&family=VT323&display=swap"
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Hanken+Grotesk:wght@400;500&display=swap"
     />
-
-    <script is:inline>
-      try {
-        var saved = localStorage.getItem('ek-theme');
-        if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
-      } catch (e) {}
-    </script>
   </head>
   <body>
-    <div class="shell">
-      <aside class="sidebar">
-        <div class="side-top">
-          <a class="brand" href="/">
-            <PixelIcon name="chart" />
-            <span class="brand-name">{site.name}</span>
-          </a>
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme">
-            <PixelIcon name="sun" class="icon-sun" />
-            <PixelIcon name="moon" class="icon-moon" />
-          </button>
-        </div>
+    <header class="topbar">
+      <a class="brand" href="/">{site.name}</a>
+      <nav class="nav" aria-label="Main">
+        {nav.map((item) => (
+          <a href={item.href} aria-current={active === item.key ? 'page' : undefined}>{item.label}</a>
+        ))}
+      </nav>
+    </header>
 
-        <hr class="rule" />
+    <main class="page">
+      <slot />
+    </main>
 
-        {site.intro && <p class="side-intro">{site.intro}</p>}
+    <Band class="footer">
+      <Fragment slot="note">
+        {site.disclaimer && <p class="small">{site.disclaimer}</p>}
+        <p class="small">© {new Date().getFullYear()} {site.name}</p>
+      </Fragment>
+      <SiteMap active={active} />
+      <div class="contact">
+        {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
+        {links.map((link) => <a href={link.href} target="_blank" rel="noopener">{link.label} ↗</a>)}
+      </div>
+    </Band>
 
-        <nav class="side-nav" aria-label="Main">
-          <a href="/" aria-current={active === 'about' ? 'page' : undefined}>
-            <PixelIcon name="person" />
-            About me
-          </a>
-          <a href="/writing/" aria-current={active === 'writing' ? 'page' : undefined}>
-            <PixelIcon name="page" />
-            Writing
-          </a>
-        </nav>
-
-        <div class="side-bottom">
-          <div class="contact-links">
-            {site.email && (
-              <a class="contact-link" href={`mailto:${site.email}`}>
-                <PixelIcon name="mail" />
-                {site.email}
-              </a>
-            )}
-            {links.map((link) => (
-              <a class="contact-link" href={link.href} target="_blank" rel="noopener">
-                <PixelIcon name="link" />
-                {link.label}
-              </a>
-            ))}
-          </div>
-          {site.disclaimer && <p>{site.disclaimer}</p>}
-        </div>
-      </aside>
-
-      <main class="main">
-        <div class="content">
-          <slot />
-
-          <footer class="page-foot">
-            <div class="contact-links">
-              {site.email && (
-                <a class="contact-link" href={`mailto:${site.email}`}>
-                  <PixelIcon name="mail" />
-                  {site.email}
-                </a>
-              )}
-              {links.map((link) => (
-                <a class="contact-link" href={link.href} target="_blank" rel="noopener">
-                  <PixelIcon name="link" />
-                  {link.label}
-                </a>
-              ))}
-            </div>
-            {site.disclaimer && <p>{site.disclaimer}</p>}
-          </footer>
-        </div>
-      </main>
-    </div>
-
-    <script is:inline>
-      (function () {
-        var root = document.documentElement;
-        var toggle = document.getElementById('theme-toggle');
-        function syncLabel() {
-          var dark = root.getAttribute('data-theme') === 'dark';
-          toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
-        }
-        toggle.addEventListener('click', function () {
-          var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-          root.setAttribute('data-theme', next);
-          try { localStorage.setItem('ek-theme', next); } catch (e) {}
-          syncLabel();
-        });
-        syncLabel();
-      })();
+    <script>
+      import '../scripts/figures.ts';
     </script>
   </body>
 </html>

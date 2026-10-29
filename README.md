@@ -1,6 +1,6 @@
 # emrekaraarslan.com
 
-Emre Karaarslan's personal site: an About me page and a log of published writing.
+Emre Karaarslan's personal site: an About me page, a log of published writing, and the books he's reading.
 
 Once it's set up, you update the site from **Pages CMS**, a free web editor. Every save publishes the change to the live site within a minute or two. You don't need Claude or any code for day-to-day edits.
 
@@ -65,10 +65,13 @@ Writing → **Add an entry**. Leave **External link** empty and write in the **P
 **Remove a piece**
 Open it in Writing and delete it. To hide it without deleting, tick **Draft**.
 
-**Edit your About text**
-About me → edit the text → Save.
+**Add a book**
+Books → **Add an entry**. Type the title and author, choose **Reading** or **Read**, and paste a quote you liked into **Quote** (optional). Save. The cover is found automatically when the site updates. If it shows the wrong edition, add the book's ISBN, or upload your own image in **Cover image**. To move a book from Reading to Read, change its status and save.
 
-**Change the sidebar line, email, LinkedIn or footer note**
+**Edit your About text**
+About me → edit the text → Save. **Big headline** is the large text at the top of the page; leave it empty to show the page title (About Me).
+
+**Change the note beside Writing, your email, LinkedIn or footer note**
 Site settings → edit → Save. LinkedIn and X only appear once you fill them in.
 
 **Images in posts**
@@ -90,8 +93,9 @@ Fonts and colors are set at the top of `src/styles/global.css`. The font files l
 | What | File |
 | ---- | ---- |
 | Writing entries | `src/content/writing/` (one file per entry) |
+| Books | `src/content/books/` (one file per book) |
 | About text | `src/data/about.md` |
-| Name, intro, email, links | `src/data/site.json` |
+| Name, notes, email, links | `src/data/site.json` |
 | Fonts and colors | `src/styles/global.css` |
 | Page layout | `src/layouts/Base.astro`, `src/pages/` |
 | Editor setup | `.pages.yml` |

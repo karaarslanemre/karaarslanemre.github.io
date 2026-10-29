@@ -1,0 +1,28 @@
+---
+import type { BookWithCover } from '../lib/books';
+
+interface Props {
+  book: BookWithCover;
+}
+
+const { book } = Astro.props;
+const { title, author } = book.data;
+---
+<span class="cover">
+  <!-- Drawn cover, shown when no image is found or the image fails to load. -->
+  <span class="cover-plain" aria-hidden={book.coverUrl ? 'true' : undefined}>
+    <span class="ct">{title}</span>
+    {author && <span class="ca">{author}</span>}
+    <span class="cn"></span>
+  </span>
+  {book.coverUrl && (
+    <img
+      src={book.coverUrl}
+      alt={`Cover of ${title}`}
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+      onerror="this.remove()"
+    />
+  )}
+</span>

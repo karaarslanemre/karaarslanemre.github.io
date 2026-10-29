@@ -47,16 +47,67 @@ content:
         description: Leave empty for pieces published elsewhere.
         type: rich-text
 
+  - name: books
+    label: Books
+    description: Add a title and author and the cover is found for you automatically when the site updates.
+    type: collection
+    path: src/content/books
+    filename: "{primary}.md"
+    view:
+      fields: [title, author, status]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: author
+        label: Author
+        type: string
+        required: true
+      - name: status
+        label: Status
+        type: select
+        default: Reading
+        options:
+          values: [Reading, Read]
+      - name: quote
+        label: Quote
+        description: Shown in large type next to the cover. Optional.
+        type: text
+      - name: date
+        label: Date
+        description: Books are listed newest first. Filled in for you.
+        type: date
+      - name: isbn
+        label: ISBN (optional)
+        description: Only needed if the automatic cover is the wrong edition. Find the ISBN on the book's back cover or its page on a bookstore site.
+        type: string
+      - name: cover
+        label: Cover image (optional)
+        description: Upload a cover to replace the automatic one.
+        type: image
+
   - name: about
     label: About me
     type: file
     path: src/data/about.md
     fields:
       - name: title
-        label: Page heading
+        label: Page title
+        description: Shown in the browser tab.
+        type: string
+      - name: headline
+        label: Big headline
+        description: The large text at the top of the page. Leave empty to show the page title.
         type: string
       - name: body
         label: About text
+        description: Shown under the headline.
         type: rich-text
 
   - name: settings
@@ -69,27 +120,20 @@ content:
         label: Your name
         type: string
         required: true
-      - name: initials
-        label: Initials
-        description: Shown in the small badge next to your name.
-        type: string
-      - name: intro
-        label: Sidebar intro
-        description: The short line under your name in the sidebar.
-        type: text
       - name: writingIntro
-        label: Writing page subtitle
+        label: Writing note
+        description: The note beside the Writing headline.
         type: text
       - name: email
         label: Email
         type: string
       - name: linkedin
         label: LinkedIn URL
-        description: Full link, e.g. https://www.linkedin.com/in/your-handle. Leave empty to hide.
+        description: Leave empty to hide.
         type: string
       - name: x
         label: X URL
-        description: Full link, e.g. https://x.com/your-handle. Leave empty to hide.
+        description: Leave empty to hide.
         type: string
       - name: disclaimer
         label: Footer note

@@ -1,0 +1,30 @@
+---
+import Figure from './Figure.astro';
+
+// One horizontal band of the page: a short note or drawing in the left margin
+// and the main content to its right, separated by a hairline.
+interface Props {
+  hero?: boolean;
+  /** Draw moving lines in an otherwise empty margin ('a' or 'b' shape). */
+  lines?: 'a' | 'b';
+  /** Vertically center the margin note against the band. */
+  center?: boolean;
+  class?: string;
+  id?: string;
+}
+
+const { hero = false, center = false, lines, class: className, id } = Astro.props;
+const hasNote = Astro.slots.has('note');
+---
+<section class:list={['band', hero && 'band--hero', className]} id={id}>
+  <div class:list={['band-note', center && 'band-note--center']}>
+    {hasNote && (
+      <div class="note"><slot name="note" /></div>
+    )}
+    <slot name="margin" />
+    {lines && <Figure kind={lines === 'a' ? 'margin-a' : 'margin-b'} />}
+  </div>
+  <div class="band-main">
+    <slot />
+  </div>
+</section>

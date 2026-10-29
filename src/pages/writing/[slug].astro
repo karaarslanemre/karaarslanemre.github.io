@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Band from '../../components/Band.astro';
 import {
   formatFullDate,
   getPublishedWriting,
@@ -24,19 +25,20 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 <Base title={entry.data.title} description={entry.data.summary ?? undefined} active="writing">
-  <section class="view">
-    <div class="post-head">
-      <a class="back" href="/writing/">← All writing</a>
-      <h1 class="display display--post">{entry.data.title}</h1>
-      <p class="post-meta">
-        <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatFullDate(entry.data.date)}</time>
-        <span aria-hidden="true">·</span>
-        <span>{readingMinutes(entry.body)} min read</span>
+  <Band hero center>
+    <Fragment slot="note">
+      <p><a href="/writing/">← All writing</a></p>
+      <p class="muted">
+        <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatFullDate(entry.data.date)}</time><br />
+        {readingMinutes(entry.body)} min read
       </p>
-    </div>
+    </Fragment>
+    <h1 class="hero hero--post">{entry.data.title}</h1>
+  </Band>
 
+  <Band lines="b">
     <article class="prose">
       <Content />
     </article>
-  </section>
+  </Band>
 </Base>

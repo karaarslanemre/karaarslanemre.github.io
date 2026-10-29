@@ -1,0 +1,52 @@
+---
+// The footer drawing: the site's three sections as connected nodes.
+interface Props {
+  active?: 'about' | 'writing' | 'books' | null;
+}
+const { active = null } = Astro.props;
+
+const main = [
+  { key: 'about', href: '/', label: 'About Me', x: 190, y: 150, r: 44, arc: 110, side: 'left' },
+  { key: 'writing', href: '/writing/', label: 'Writing', x: 520, y: 98, r: 52, arc: 75, side: 'right' },
+  { key: 'books', href: '/books/', label: 'Books', x: 815, y: 198, r: 40, arc: 140, side: 'right' },
+];
+const small = [
+  [86, 62], [58, 246], [360, 236], [420, 34], [640, 262], [700, 36], [955, 84], [950, 270], [300, 70],
+];
+const lines = [
+  [190, 150, 520, 98], [520, 98, 815, 198],
+  [190, 150, 86, 62], [190, 150, 58, 246], [190, 150, 360, 236], [190, 150, 300, 70],
+  [520, 98, 420, 34], [815, 198, 700, 36], [360, 236, 640, 262],
+  [815, 198, 640, 262], [815, 198, 955, 84], [815, 198, 950, 270],
+];
+
+// A thick arc from 12 o'clock, clockwise by `deg` degrees.
+const arcPath = (x: number, y: number, r: number, deg: number) => {
+  const a = ((deg - 90) * Math.PI) / 180;
+  const ex = x + r * Math.cos(a);
+  const ey = y + r * Math.sin(a);
+  return `M${x} ${y - r}A${r} ${r} 0 ${deg > 180 ? 1 : 0} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`;
+};
+---
+<svg class="sitemap" viewBox="0 0 1000 300" role="img" aria-label="Site map">
+  {lines.map(([x1, y1, x2, y2]) => <line x1={x1} y1={y1} x2={x2} y2={y2} />)}
+  {small.map(([x, y]) => (
+    <g>
+      <circle class="sm" cx={x} cy={y} r="12" />
+      <circle class="sm-core" cx={x} cy={y} r="3" />
+    </g>
+  ))}
+  {main.map((n) => (
+    <a href={n.href} aria-label={n.label}>
+      <circle class:list={['ring', active === n.key && 'ring--on']} cx={n.x} cy={n.y} r={n.r} />
+      {active !== n.key && <path class="arc" d={arcPath(n.x, n.y, n.r, n.arc)} />}
+      <circle class="core" cx={n.x} cy={n.y} r="6" />
+      <text
+        class="t-main"
+        x={n.side === 'left' ? n.x - n.r - 14 : n.x + n.r + 14}
+        y={n.y + 6}
+        text-anchor={n.side === 'left' ? 'end' : 'start'}
+      >{n.label}</text>
+    </a>
+  ))}
+</svg>

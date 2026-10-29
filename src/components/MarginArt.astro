@@ -1,0 +1,77 @@
+---
+// Small wireframe drawings in isometric view for the left margin of each
+// page's top band: a rising bar chart (About Me), a stack of written pages
+// with a pencil (Writing), and a stack of books (Books).
+interface Props {
+  kind: 'chart' | 'pages' | 'books';
+}
+const { kind } = Astro.props;
+
+type P = [number, number];
+const U: P = [0.866, -0.5]; // right and back
+const V: P = [-0.866, -0.5]; // left and back
+const at = (x: number, y: number, a = 0, b = 0, up = 0): P => [x + a * U[0] + b * V[0], y + a * U[1] + b * V[1] - up];
+
+/** The three visible faces of a box whose front-bottom corner is at (x, y). */
+function box(x: number, y: number, a: number, b: number, h: number): P[][] {
+  return [
+    [at(x, y), at(x, y, a), at(x, y, a, 0, h), at(x, y, 0, 0, h)],
+    [at(x, y), at(x, y, 0, b), at(x, y, 0, b, h), at(x, y, 0, 0, h)],
+    [at(x, y, 0, 0, h), at(x, y, a, 0, h), at(x, y, a, b, h), at(x, y, 0, b, h)],
+  ];
+}
+
+const polys: P[][] = [];
+const lines: P[][] = [];
+
+if (kind === 'books') {
+  polys.push(
+    ...box(82, 146, 84, 52, 15),
+    ...box(88, 131, 74, 50, 11),
+    ...box(80, 120, 80, 46, 17),
+    ...box(182, 146, 22, 20, 30),
+  );
+}
+
+if (kind === 'chart') {
+  // A base plate with three columns rising toward the back.
+  const [px, py] = [70, 146];
+  polys.push(...box(px, py, 124, 50, 4));
+  [28, 50, 76].forEach((h, i) => {
+    const [cx, cy] = at(px, py, 10 + i * 34, 13, 4);
+    polys.push(...box(cx, cy, 24, 24, h));
+  });
+}
+
+if (kind === 'pages') {
+  // Three loose sheets, the top one with lines of text, and a pencil.
+  const sheets: [number, number][] = [[0, 0], [5, 3], [2, 7]];
+  sheets.forEach(([da, db], i) => {
+    const [sx, sy] = at(70, 146, da, db, i * 3);
+    polys.push(...box(sx, sy, 96, 66, 2));
+  });
+  const [tx, ty] = at(70, 146, 2, 7, 8);
+  [12, 21, 30, 39, 48].forEach((b, i) => {
+    const len = [70, 78, 62, 74, 40][i];
+    lines.push([at(tx, ty, 11, b), at(tx, ty, 11 + len, b)]);
+  });
+  // Pencil lying beside the stack, with a pointed tip.
+  const [qx, qy] = at(70, 146, 108, -4);
+  polys.push(...box(qx, qy, 7, 72, 7));
+  polys.push([at(qx, qy, 0, 72, 7), at(qx, qy, 7, 72, 7), at(qx, qy, 3.5, 84, 3.5)]);
+}
+
+// Fit every drawing to the same 220-unit width so they share one scale.
+const xs = [...polys, ...lines].flat().map((p) => p[0]);
+const ys = [...polys, ...lines].flat().map((p) => p[1]);
+const pad = 4;
+const minY = Math.min(...ys) - pad;
+const height = Math.max(...ys) + pad - minY;
+const midX = (Math.min(...xs) + Math.max(...xs)) / 2;
+const viewBox = kind === 'books' ? '0 0 220 150' : `${(midX - 110).toFixed(1)} ${minY.toFixed(1)} 220 ${height.toFixed(1)}`;
+const pts = (p: P[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+---
+<svg class="margin-art" viewBox={viewBox} aria-hidden="true">
+  {polys.map((p) => <polygon points={pts(p)} />)}
+  {lines.map((l) => <polyline points={pts(l)} />)}
+</svg>

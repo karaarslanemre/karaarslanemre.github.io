@@ -1,0 +1,9 @@
+---
+// A thin line drawing. The shape is drawn and animated by
+// src/scripts/figures.ts, which fits it around the headline next to it.
+interface Props {
+  kind: 'orbit' | 'chart' | 'ribbon' | 'margin-a' | 'margin-b';
+}
+const { kind } = Astro.props;
+---
+<div class:list={['fig', kind.startsWith('margin') && 'fig--margin']} data-fig={kind} aria-hidden="true"></div>

@@ -1,0 +1,47 @@
+---
+import {
+  entryHref,
+  formatMonth,
+  isExternal,
+  readingMinutes,
+  type WritingEntry,
+} from '../lib/writing';
+
+interface Props {
+  entries: WritingEntry[];
+  /** Total number of published pieces, so (01) is always the oldest. */
+  total?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { entries, total = entries.length, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+---
+<ul class="panels">
+  {entries.map((entry, i) => {
+    const number = String(total - i).padStart(2, '0');
+    const external = isExternal(entry);
+    return (
+      <li class="panel">
+        <a
+          class="panel-link"
+          href={entryHref(entry)}
+          target={external ? '_blank' : undefined}
+          rel={external ? 'noopener' : undefined}
+        >
+          <div class="panel-top">
+            <span>({number})</span>
+            <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatMonth(entry.data.date)}</time>
+          </div>
+          <div class="panel-body">
+            <Heading class="panel-title">{entry.data.title}</Heading>
+            {entry.data.summary && <p class="panel-desc">{entry.data.summary}</p>}
+          </div>
+          <span class="panel-side">
+            {external ? `${entry.data.publication || 'Elsewhere'} ↗` : `Essay · ${readingMinutes(entry.body)} min`}
+          </span>
+        </a>
+      </li>
+    );
+  })}
+</ul>

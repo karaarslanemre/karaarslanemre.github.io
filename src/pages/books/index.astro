@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import Band from '../../components/Band.astro';
+import Figure from '../../components/Figure.astro';
+import MarginArt from '../../components/MarginArt.astro';
+import BookList from '../../components/BookList.astro';
+import site from '../../data/site.json';
+import { getBooks, isReading } from '../../lib/books';
+
+const books = await getBooks();
+const reading = books.filter(isReading);
+const read = books.filter((book) => !isReading(book));
+---
+<Base title="Books" active="books">
+  <Band hero center>
+    <Fragment slot="margin"><MarginArt kind="books" /></Fragment>
+    <h1 class="hero">Books</h1>
+    <Figure kind="ribbon" />
+  </Band>
+
+  {reading.length > 0 && (
+    <Band lines="a">
+      <div class="band-head"><h2 class="h2">Reading now.</h2></div>
+      <BookList books={reading} />
+    </Band>
+  )}
+
+  {read.length > 0 && (
+    <Band lines={reading.length > 0 ? 'b' : 'a'}>
+      <div class="band-head"><h2 class="h2">Read.</h2></div>
+      <BookList books={read} />
+    </Band>
+  )}
+
+  {books.length === 0 && (
+    <Band lines="a">
+      <p class="empty">Nothing on the shelf yet.</p>
+    </Band>
+  )}
+</Base>

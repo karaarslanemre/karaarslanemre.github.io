@@ -1,9 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import Band from '../components/Band.astro';
 ---
 <Base title="Page not found">
-  <section class="view">
-    <h1 class="display">Not found</h1>
-    <p class="lead">That page doesn't exist. Try the <a href="/writing/">writing log</a> or go back to the <a href="/">home page</a>.</p>
-  </section>
+  <Band hero center>
+    <Fragment slot="note"><p>Try <a href="/writing/">Writing</a>, <a href="/books/">Books</a> or the <a href="/">home page</a>.</p></Fragment>
+    <h1 class="hero">Page not found</h1>
+  </Band>
 </Base>
