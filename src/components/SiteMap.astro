@@ -1,23 +1,24 @@
 ---
-// The footer drawing: the site's three sections as connected nodes.
+// The footer drawing: the site's four sections as connected nodes.
 interface Props {
-  active?: 'about' | 'writing' | 'books' | null;
+  active?: 'about' | 'writing' | 'books' | 'projects' | null;
 }
 const { active = null } = Astro.props;
 
 const main = [
-  { key: 'about', href: '/', label: 'About Me', x: 190, y: 150, r: 44, arc: 110, side: 'left' },
-  { key: 'writing', href: '/writing/', label: 'Writing', x: 520, y: 98, r: 52, arc: 75, side: 'right' },
-  { key: 'books', href: '/books/', label: 'Books', x: 815, y: 198, r: 40, arc: 140, side: 'right' },
+  { key: 'about', href: '/', label: 'About Me', x: 170, y: 150, r: 44, arc: 110, side: 'left' },
+  { key: 'writing', href: '/writing/', label: 'Writing', x: 430, y: 92, r: 52, arc: 75, side: 'right' },
+  { key: 'books', href: '/books/', label: 'Books', x: 655, y: 214, r: 40, arc: 140, side: 'right' },
+  { key: 'projects', href: '/projects/', label: 'Projects', x: 868, y: 96, r: 42, arc: 200, side: 'left' },
 ];
 const small = [
-  [86, 62], [58, 246], [360, 236], [420, 34], [640, 262], [700, 36], [955, 84], [950, 270], [300, 70],
+  [76, 62], [52, 246], [320, 238], [340, 34], [560, 36], [520, 270], [790, 270], [960, 220], [962, 34], [262, 72],
 ];
 const lines = [
-  [190, 150, 520, 98], [520, 98, 815, 198],
-  [190, 150, 86, 62], [190, 150, 58, 246], [190, 150, 360, 236], [190, 150, 300, 70],
-  [520, 98, 420, 34], [815, 198, 700, 36], [360, 236, 640, 262],
-  [815, 198, 640, 262], [815, 198, 955, 84], [815, 198, 950, 270],
+  [170, 150, 430, 92], [430, 92, 655, 214], [655, 214, 868, 96],
+  [170, 150, 76, 62], [170, 150, 52, 246], [170, 150, 320, 238], [170, 150, 262, 72],
+  [430, 92, 340, 34], [430, 92, 560, 36], [320, 238, 520, 270],
+  [655, 214, 520, 270], [655, 214, 790, 270], [868, 96, 962, 34], [868, 96, 960, 220], [790, 270, 960, 220],
 ];
 
 // A thick arc from 12 o'clock, clockwise by `deg` degrees.

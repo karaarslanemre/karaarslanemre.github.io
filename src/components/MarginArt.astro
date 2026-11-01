@@ -1,9 +1,10 @@
 ---
 // Small wireframe drawings in isometric view for the left margin of each
 // page's top band: a rising bar chart (About Me), a stack of written pages
-// with a pencil (Writing), and a stack of books (Books).
+// with a pencil (Writing), a stack of books (Books), and a stepped stack of
+// plates, one per zoom level (Projects).
 interface Props {
-  kind: 'chart' | 'pages' | 'books';
+  kind: 'chart' | 'pages' | 'books' | 'layers';
 }
 const { kind } = Astro.props;
 
@@ -40,6 +41,20 @@ if (kind === 'chart') {
   [28, 50, 76].forEach((h, i) => {
     const [cx, cy] = at(px, py, 10 + i * 34, 13, 4);
     polys.push(...box(cx, cy, 24, 24, h));
+  });
+}
+
+if (kind === 'layers') {
+  // Four plates, each smaller and centered on the one below.
+  const [px, py] = [80, 150];
+  const plates: [number, number, number][] = [[120, 64, 7], [92, 50, 7], [64, 36, 7], [36, 22, 7]];
+  let up = 0;
+  plates.forEach(([a, b, h]) => {
+    const da = (plates[0][0] - a) / 2;
+    const db = (plates[0][1] - b) / 2;
+    const [x, y] = at(px, py, da, db, up);
+    polys.push(...box(x, y, a, b, h));
+    up += h + 9;
   });
 }
 

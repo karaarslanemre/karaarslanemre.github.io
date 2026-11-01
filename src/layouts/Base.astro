@@ -7,7 +7,7 @@ import SiteMap from '../components/SiteMap.astro';
 interface Props {
   title?: string;
   description?: string;
-  active?: 'about' | 'writing' | 'books' | null;
+  active?: 'about' | 'writing' | 'books' | 'projects' | null;
 }
 
 const { title, description = site.writingIntro, active = null } = Astro.props;
@@ -29,12 +29,14 @@ const nav = [
   { key: 'about', href: '/', label: 'About Me' },
   { key: 'writing', href: '/writing/', label: 'Writing' },
   { key: 'books', href: '/books/', label: 'Books' },
+  { key: 'projects', href: '/projects/', label: 'Projects' },
 ];
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <slot name="head" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}

@@ -1,0 +1,17 @@
+// For testing on a computer without Cloudflare: same server, fake model.
+//   npx wrangler dev -c wrangler.test.jsonc
+{
+  "name": "zoom-reader-test",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "durable_objects": {
+    "bindings": [{ "name": "QUOTA", "class_name": "Quota" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
+  "vars": {
+    "MOCK_AI": "1",
+    "ALLOWED_ORIGINS": "",
+    "DAILY_NEURONS": "9500",
+    "VISITOR_NEURONS": "2500"
+  }
+}

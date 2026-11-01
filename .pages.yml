@@ -92,6 +92,47 @@ content:
         description: Upload a cover to replace the automatic one.
         type: image
 
+  - name: projects
+    label: Projects
+    description: Tiles on the Projects page. Each tile links to the project's own page (like /projects/zoom-reader/) or to a site elsewhere.
+    type: collection
+    path: src/content/projects
+    filename: "{primary}.md"
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: summary
+        label: One-line summary
+        description: Shown under the title on the tile.
+        type: text
+      - name: link
+        label: Link
+        description: A page on this site, like /projects/zoom-reader/, or a full web address for a project hosted elsewhere.
+        type: string
+        required: true
+      - name: label
+        label: Side label
+        description: The small text running up the tile's right edge, e.g. "Tool · Try it". Leave empty to show "Project".
+        type: string
+      - name: draft
+        label: Draft
+        description: Tick to hide this project from the live site.
+        type: boolean
+        default: false
+
   - name: about
     label: About me
     type: file
@@ -137,4 +178,20 @@ content:
         type: string
       - name: disclaimer
         label: Footer note
+        type: string
+
+  - name: zoom-reader
+    label: Zoom Reader settings
+    description: Settings for the Zoom Reader project. You only need these once, when connecting its free AI server.
+    type: file
+    path: src/data/zoom-reader.json
+    format: json
+    fields:
+      - name: server
+        label: Free server address
+        description: The address shown when the "Deploy Zoom Reader server" run on GitHub finishes, like https://zoom-reader.yourname.workers.dev. Leave empty to turn free explanations off; visitors can still try the example or use their own key.
+        type: string
+      - name: modelLabel
+        label: Model name shown to visitors
+        description: Only change this if you change MODEL in worker/wrangler.jsonc.
         type: string

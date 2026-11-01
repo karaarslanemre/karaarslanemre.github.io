@@ -1,0 +1,43 @@
+---
+import { formatMonth } from '../lib/writing';
+import { isExternalProject, projectHref, type ProjectEntry } from '../lib/projects';
+
+// Project tiles, drawn like the Writing panels: number and date on top,
+// title and one-line summary below, and a label running up the right edge.
+interface Props {
+  entries: ProjectEntry[];
+  /** Total number of projects, so (01) is always the oldest. */
+  total?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { entries, total = entries.length, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+---
+<ul class="panels">
+  {entries.map((entry, i) => {
+    const number = String(total - i).padStart(2, '0');
+    const external = isExternalProject(entry);
+    const label = (entry.data.label ?? '').trim() || 'Project';
+    return (
+      <li class="panel">
+        <a
+          class="panel-link"
+          href={projectHref(entry)}
+          target={external ? '_blank' : undefined}
+          rel={external ? 'noopener' : undefined}
+        >
+          <div class="panel-top">
+            <span>({number})</span>
+            <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatMonth(entry.data.date)}</time>
+          </div>
+          <div class="panel-body">
+            <Heading class="panel-title">{entry.data.title}</Heading>
+            {entry.data.summary && <p class="panel-desc">{entry.data.summary}</p>}
+          </div>
+          <span class="panel-side">{external ? `${label} ↗` : label}</span>
+        </a>
+      </li>
+    );
+  })}
+</ul>

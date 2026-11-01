@@ -34,4 +34,19 @@ const books = defineCollection({
   }),
 });
 
-export const collections = { writing, books };
+// Every Markdown file in src/content/projects is one tile on the Projects page.
+// A project's own page (like the Zoom Reader) lives in src/pages/projects/;
+// the entry here just lists it and links to it.
+const projects = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    summary: z.string().nullish(),
+    link: z.string().nullish(),
+    label: z.string().nullish(),
+    draft: z.boolean().nullish(),
+  }),
+});
+
+export const collections = { writing, books, projects };

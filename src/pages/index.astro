@@ -5,13 +5,16 @@ import Figure from '../components/Figure.astro';
 import MarginArt from '../components/MarginArt.astro';
 import WritingPanels from '../components/WritingPanels.astro';
 import BookCover from '../components/BookCover.astro';
+import ProjectPanels from '../components/ProjectPanels.astro';
 import site from '../data/site.json';
 import { Content as AboutText, frontmatter } from '../data/about.md';
 import { getPublishedWriting } from '../lib/writing';
 import { getBooks, isReading } from '../lib/books';
+import { getProjects } from '../lib/projects';
 
 const writing = await getPublishedWriting();
 const books = await getBooks();
+const projects = await getProjects();
 const shelf = [...books.filter(isReading), ...books.filter((b) => !isReading(b))].slice(0, 6);
 const headline = (frontmatter.headline ?? '').trim() || (frontmatter.title ?? '').trim() || 'About Me';
 ---
@@ -35,8 +38,18 @@ const headline = (frontmatter.headline ?? '').trim() || (frontmatter.title ?? ''
     </Band>
   )}
 
-  {shelf.length > 0 && (
+  {projects.length > 0 && (
     <Band lines="b">
+      <div class="band-head">
+        <h2 class="h2">Projects.</h2>
+        <a class="see-all" href="/projects/">See all projects</a>
+      </div>
+      <ProjectPanels entries={projects.slice(0, 3)} total={projects.length} headingLevel="h3" />
+    </Band>
+  )}
+
+  {shelf.length > 0 && (
+    <Band lines="a">
       <div class="band-head">
         <h2 class="h2">Books.</h2>
         <a class="see-all" href="/books/">See all books</a>

@@ -1,0 +1,25 @@
+// Settings for Zoom Reader's free server on Cloudflare.
+// Deployed automatically by .github/workflows/deploy-worker.yml.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zoom-reader",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "ai": { "binding": "AI" },
+  "durable_objects": {
+    "bindings": [{ "name": "QUOTA", "class_name": "Quota" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Quota"] }],
+  "vars": {
+    // The open model that writes the zoom levels.
+    "MODEL": "@cf/google/gemma-4-26b-a4b-it",
+    // Pages allowed to use this server.
+    "ALLOWED_ORIGINS": "https://emrekaraarslan.com,https://www.emrekaraarslan.com,https://karaarslanemre.github.io",
+    // Cloudflare's free allowance is 10,000 neurons a day. Stop a little short
+    // of it, and let no single visitor use more than a quarter of it.
+    "DAILY_NEURONS": "9500",
+    "VISITOR_NEURONS": "2500"
+  },
+  "observability": { "enabled": true }
+}

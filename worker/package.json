@@ -1,0 +1,12 @@
+{
+  "name": "zoom-reader-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev -c wrangler.test.jsonc"
+  },
+  "devDependencies": {
+    "wrangler": "4.156.0"
+  }
+}

@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import Band from '../../components/Band.astro';
+import Figure from '../../components/Figure.astro';
+import MarginArt from '../../components/MarginArt.astro';
+import ProjectPanels from '../../components/ProjectPanels.astro';
+import { getProjects } from '../../lib/projects';
+
+const projects = await getProjects();
+const intro = 'Small tools I’ve built. Try them right here.';
+---
+<Base title="Projects" description={intro} active="projects">
+  <Band hero center>
+    <Fragment slot="note"><p>{intro}</p></Fragment>
+    <Fragment slot="margin"><MarginArt kind="layers" /></Fragment>
+    <h1 class="hero">Projects</h1>
+    <Figure kind="orbit" />
+  </Band>
+
+  <Band lines="a">
+    {projects.length > 0
+      ? <ProjectPanels entries={projects} />
+      : <p class="empty">Nothing here yet.</p>}
+  </Band>
+</Base>

@@ -1,0 +1,66 @@
+name: Deploy Zoom Reader server
+
+# Publishes worker/ (Zoom Reader's free AI server) to Cloudflare whenever it
+# changes. It needs two repository secrets, CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID (see README → Zoom Reader). Until they're added, this
+# finishes without doing anything.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'src/zoom/prompts.ts'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check that Cloudflare is connected
+        id: check
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cloudflare isn't connected yet, so the Zoom Reader server wasn't deployed. See README, section Zoom Reader."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the site
+        if: steps.check.outputs.ready == 'true'
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        if: steps.check.outputs.ready == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Deploy to Cloudflare
+        if: steps.check.outputs.ready == 'true'
+        working-directory: worker
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          npm ci --no-audit --no-fund
+          npx wrangler deploy 2>&1 | tee deploy.log
+          URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          {
+            echo "### Zoom Reader server is live"
+            echo ""
+            echo "Address: \`$URL\`"
+            echo ""
+            echo "Paste it into Pages CMS → Zoom Reader settings → Free server address (only needed the first time)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Zoom Reader server address: $URL"
