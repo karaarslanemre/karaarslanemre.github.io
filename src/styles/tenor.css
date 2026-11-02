@@ -153,6 +153,8 @@
 .tn-x:hover { border-color: var(--line); }
 .tn-x--small { width: 1.4rem; height: 1.4rem; font-size: 0.95rem !important; vertical-align: middle; }
 .tn-warn { grid-column: 2 / -1; color: var(--tn-error); }
+.tn-checked { grid-column: 2 / -1; color: var(--muted); }
+.tn-checked--error { color: var(--tn-error); }
 
 /* ---------- Trend ---------- */
 .tn-company { font-family: var(--font-sans); font-size: var(--fs-title); line-height: 1.15; letter-spacing: -0.015em; }

@@ -133,7 +133,7 @@ To try the server on your own computer: `cd worker && npm install && npm run dev
 Tenor (`/projects/tenor/`) reads earnings call transcripts (PDFs or pasted text, one per quarter) and shows how management's language changes from call to call: tone, hedging, how many figures they give, which topics come up, and which answers in the Q&A may not answer the question. The example is eight quarters of Corvane Systems, a made-up company.
 
 - **On this site, no AI at all.** Everything runs in the visitor's browser: the transcript is split into speakers and sections, then scored by counting words against lists written for earnings calls. Nothing is uploaded, and there's nothing to pay for.
-- **Open in Claude adds judgment.** The copy hosted on claude.ai can also have Claude judge whether each answer answered the question, and write a short read of the trend, on the visitor's own Claude plan. Its link is **Open in Claude link** in Pages CMS → **Tenor settings** (`claude` in `src/data/tenor.json`). Like Strata's, share it in Claude so anyone with the link can view it.
+- **Open in Claude adds judgment.** In the copy hosted on claude.ai, Claude also checks how each added call was read (company, quarter, who is who, where the Q&A starts) and corrects the rules where needed. Visitors can then have Claude judge whether each answer answered the question, and write a short read of the trend. All of it runs on the visitor's own Claude plan. Its link is **Open in Claude link** in Pages CMS → **Tenor settings** (`claude` in `src/data/tenor.json`). Like Strata's, share it in Claude so anyone with the link can view it.
 
 ### Changing it
 

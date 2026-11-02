@@ -5,6 +5,7 @@
 
 import { signed, type Analysis } from './analyze';
 import type { Topic } from './lexicon';
+import type { Call, Reading } from './parse';
 
 export type Verdict = 'answered' | 'partial' | 'sidestepped';
 export interface Judgment {
@@ -161,6 +162,47 @@ ${flagged || 'None.'}`;
   try {
     const { text } = await sample(prompt, { modelTier: 'default', signal, onText: ({ text }) => onText(text) });
     return text;
+  } catch (e) {
+    throw e instanceof ClaudeError ? e : explain(e);
+  }
+}
+
+/**
+ * Claude reads the start of a transcript and an outline of its turns, and
+ * says who is who, where the Q&A starts, and which company and quarter it is.
+ * The word rules make a first pass; this catches what they got wrong.
+ */
+export async function checkReading(call: Call, raw: string, signal?: AbortSignal): Promise<Reading> {
+  const sample = await claude();
+  if (!sample) throw new ClaudeError('unavailable', 'Open this page in Claude, signed in, to use Claude here.', true);
+  const roleName: Record<string, string> = { ceo: 'CEO', cfo: 'CFO', exec: 'executive', analyst: 'analyst', operator: 'operator', other: 'unknown' };
+  const outline = call.turns
+    .slice(0, 140)
+    .map((t, i) => `#${i} ${t.speaker} (guess: ${roleName[t.role]}${t.section === 'qa' ? ', Q&A' : ''}): "${clip(t.paras.map((p) => p.text).join(' '), 150)}"`)
+    .join('\n');
+  const prompt = `Below is the start of an earnings call transcript, then an outline of every turn as a program split it: turn number, speaker label, the program's guess, and the first words. The guesses come from simple rules and may be wrong, because transcripts are laid out in many different ways.
+
+Work out:
+- the company's name as it is usually written, and its stock ticker if the transcript states it;
+- which quarter and year the call reports on, and whether the transcript calls it a fiscal year;
+- each speaker's role: "operator" (whoever moderates the call, even if listed under a first name), "ceo", "cfo", "exec" (any other company person, including investor relations), "analyst" (people asking questions) or "other";
+- the number of the turn where the question-and-answer session begins (usually the operator opening the queue), or null if there is none.
+
+Reply with only JSON in this shape:
+{"company": "Acme Corp", "ticker": "ACME", "quarter": 3, "year": 2025, "fiscal": false, "speakers": [{"name": "Jane Doe", "role": "ceo", "title": "Chief Executive Officer"}], "qaStartsAtTurn": 7}
+Use each speaker label exactly as it appears in the outline. Include a title only if the transcript states it.
+
+Start of the transcript:
+"""
+${raw.slice(0, 3000)}
+"""
+
+Outline:
+${outline}`;
+  try {
+    const out = await sample.json<Reading>(prompt, { modelTier: 'quick', signal });
+    if (!out || typeof out !== 'object') throw { code: 'invalid_json' };
+    return out;
   } catch (e) {
     throw e instanceof ClaudeError ? e : explain(e);
   }

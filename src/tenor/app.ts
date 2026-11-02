@@ -8,10 +8,10 @@
 
 import { analyze, findings, scan, signed, type Analysis, type Exchange, type Scores } from './analyze';
 import { lineChart, type Series } from './charts';
-import { claude, ClaudeError, judgeAnswers, readTrend, type Judgment } from './claude';
+import { checkReading, claude, ClaudeError, judgeAnswers, readTrend, type Judgment } from './claude';
 import { EXAMPLE } from './example';
 import { TOPICS, type Topic } from './lexicon';
-import { findPeriod, parseTranscript, type Call, type Turn } from './parse';
+import { applyReading, findPeriod, makePeriod, parseTranscript, type Call, type Reading, type Turn } from './parse';
 
 interface Item {
   name: string;
@@ -20,6 +20,10 @@ interface Item {
   call: Call;
   analysis: Analysis;
   order: number;
+  // Claude's check of how the call was read (claude.ai copy only)
+  check?: 'working' | 'done' | 'error';
+  checkNote?: string;
+  reading?: Reading;
 }
 
 const SAVE_KEY = 'tenor:last';
@@ -86,7 +90,17 @@ function addText(text: string, name: string, label?: string): 'added' | 'duplica
   return 'added';
 }
 
+// If some transcripts call the quarter fiscal ("Q4 FY25") and others don't
+// ("Q1 2026"), label them all the fiscal way so the axis reads consistently.
+function harmonizeLabels() {
+  const auto = state.items.filter((i) => !i.label && i.call.period.q && i.call.period.year);
+  if (auto.some((i) => i.call.period.fiscal) && auto.some((i) => !i.call.period.fiscal)) {
+    for (const i of auto) if (!i.call.period.fiscal) i.call.period = makePeriod(i.call.period.q!, i.call.period.year!, true);
+  }
+}
+
 function sortItems() {
+  harmonizeLabels();
   const key = (i: Item) => i.call.period.sort;
   state.items.sort((a, b) => {
     const ka = key(a);
@@ -124,6 +138,7 @@ async function loadFiles(files: File[]) {
   if (pdfs.length < files.length) notes.push(`${files.length - pdfs.length} file${files.length - pdfs.length === 1 ? ' isn’t a PDF' : 's aren’t PDFs'}, so ${files.length - pdfs.length === 1 ? 'it was' : 'they were'} skipped.`);
   if (state.example) clearAll();
   let added = 0;
+  const before = new Set(state.items.map((i) => i.call.id));
   const { pdfToText } = await import('./pdf');
   for (let k = 0; k < pdfs.length; k++) {
     const f = pdfs[k];
@@ -145,7 +160,10 @@ async function loadFiles(files: File[]) {
     }
   }
   say(notes.length ? `${added ? `Added ${added} call${added === 1 ? '' : 's'}. ` : ''}${notes.join(' ')}` : '', notes.length && !added ? 'error' : 'info');
-  if (added) afterAdding(true);
+  if (added) {
+    afterAdding(true);
+    checkCalls(state.items.filter((i) => !before.has(i.call.id)));
+  }
 }
 
 function loadExample() {
@@ -195,7 +213,13 @@ function renderCallList() {
     remove.setAttribute('aria-label', `Remove ${item.name}`);
     remove.textContent = '×';
     li.append(input, info, src, remove);
-    const warns = [...c.warnings];
+    if (item.check) {
+      const p = document.createElement('span');
+      p.className = `tn-checked tn-checked--${item.check}`;
+      p.textContent = item.check === 'working' ? 'Claude is checking how this call was read…' : item.checkNote ?? '';
+      li.append(p);
+    }
+    const warns = item.check === 'working' ? [] : [...c.warnings];
     if ((labels.get(c.period.label) ?? 0) > 1) warns.push(`Two calls are labelled ${c.period.label}.`);
     for (const w of warns) {
       const p = document.createElement('span');
@@ -205,6 +229,51 @@ function renderCallList() {
     }
     list.append(li);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Claude checks how each call was read (claude.ai copy only)
+// ---------------------------------------------------------------------------
+
+function useReading(item: Item, reading: Reading): string[] {
+  const notes = applyReading(item.call, reading, !!item.label);
+  item.reading = reading;
+  item.analysis = analyze(item.call, topics());
+  return notes;
+}
+
+async function checkCalls(list: Item[]) {
+  if (!onClaude || state.claudeOff || !list.length) return;
+  const queue = [...list];
+  for (const i of queue) i.check = 'working';
+  renderCallList();
+  const worker = async () => {
+    for (;;) {
+      const item = queue.shift();
+      if (!item) return;
+      if (state.claudeOff) {
+        item.check = undefined;
+        continue;
+      }
+      try {
+        const notes = useReading(item, await checkReading(item.call, item.text));
+        item.check = 'done';
+        const list = notes.length > 1 ? `${notes.slice(0, -1).join(', ')} and ${notes[notes.length - 1]}` : notes[0];
+        item.checkNote = notes.length ? `Checked by Claude, which ${list}.` : 'Checked by Claude: read correctly.';
+      } catch (err) {
+        claudeFailed(err);
+        item.check = state.claudeOff ? undefined : 'error';
+        item.checkNote = state.claudeOff ? '' : `Claude couldn’t check this call: ${(err as Error).message}`;
+      }
+      if (!state.items.includes(item)) continue;
+      const id = state.items[state.selected]?.call.id;
+      sortItems();
+      state.selected = Math.max(0, state.items.findIndex((i) => i.call.id === id));
+      render();
+      save();
+    }
+  };
+  await Promise.all([worker(), worker()]);
 }
 
 // ---------------------------------------------------------------------------
@@ -796,7 +865,7 @@ function save() {
       SAVE_KEY,
       JSON.stringify({
         example: state.example,
-        items: state.example ? [] : state.items.map((i) => ({ name: i.name, text: i.text, label: i.label })),
+        items: state.example ? [] : state.items.map((i) => ({ name: i.name, text: i.text, label: i.label, reading: i.reading, checkNote: i.checkNote })),
         custom: state.custom,
         judgments: [...state.judgments.entries()],
       }),
@@ -806,7 +875,12 @@ function save() {
   }
 }
 
-function readSaved(): { example: boolean; items: Array<{ name: string; text: string; label?: string }>; custom: Topic[]; judgments: [string, Judgment[]][] } | null {
+function readSaved(): {
+  example: boolean;
+  items: Array<{ name: string; text: string; label?: string; reading?: Reading; checkNote?: string }>;
+  custom: Topic[];
+  judgments: [string, Judgment[]][];
+} | null {
   try {
     const raw = sessionStorage.getItem(SAVE_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -830,7 +904,17 @@ function continueLast() {
   if (saved.example) {
     for (const e of EXAMPLE) addText(e.text, e.name);
     state.example = true;
-  } else for (const i of saved.items) addText(i.text, i.name, i.label);
+  } else {
+    for (const i of saved.items) {
+      addText(i.text, i.name, i.label);
+      const item = state.items[state.items.length - 1];
+      if (i.reading && item?.name === i.name) {
+        useReading(item, i.reading);
+        item.check = 'done';
+        item.checkNote = i.checkNote;
+      }
+    }
+  }
   for (const [id, j] of saved.judgments ?? []) state.judgments.set(id, j);
   $('[data-continue-wrap]').hidden = true;
   afterAdding(true);
@@ -871,6 +955,7 @@ pasteForm.addEventListener('submit', (e) => {
   $('[data-count]', pasteForm).textContent = '';
   say('');
   afterAdding(true);
+  checkCalls([state.items.find((i) => i.name === `Pasted call ${n}`)!].filter(Boolean));
 });
 pasteBox.addEventListener('input', () => {
   const n = pasteBox.value.trim() ? pasteBox.value.trim().split(/\s+/).length : 0;
