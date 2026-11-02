@@ -1,8 +1,8 @@
-// Settings for Zoom Reader's free server on Cloudflare.
-// Deployed automatically by .github/workflows/deploy-worker.yml.
+// Settings for Strata's free server on Cloudflare.
+// Deployed automatically by .github/workflows/deploy-strata-server.yml.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "zoom-reader",
+  "name": "strata",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "workers_dev": true,

@@ -35,7 +35,7 @@ const books = defineCollection({
 });
 
 // Every Markdown file in src/content/projects is one tile on the Projects page.
-// A project's own page (like the Zoom Reader) lives in src/pages/projects/;
+// A project's own page (like Strata) lives in src/pages/projects/;
 // the entry here just lists it and links to it.
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),

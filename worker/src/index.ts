@@ -1,7 +1,7 @@
-// Zoom Reader's free server: a Cloudflare Worker that runs an open AI model
+// Strata's free server: a Cloudflare Worker that runs an open AI model
 // (Gemma 4 by default) on Cloudflare's free daily Workers AI allowance.
 //
-// - It only runs Zoom Reader's own fixed tasks (src/zoom/prompts.ts), never
+// - It only runs Strata's own fixed tasks (src/strata/prompts.ts), never
 //   arbitrary prompts, and caps how much text each request can send.
 // - It only answers pages on emrekaraarslan.com (and local previews).
 // - It keeps a running total of the day's usage so no single visitor can use
@@ -14,7 +14,7 @@
 // allowance is used, so this can't run up a bill.
 
 import { DurableObject } from 'cloudflare:workers';
-import { buildPrompt, parseTaskInput } from '../../src/zoom/prompts';
+import { buildPrompt, parseTaskInput } from '../../src/strata/prompts';
 
 interface Env {
   AI: { run(model: string, input: Record<string, unknown>): Promise<unknown> };
@@ -60,7 +60,7 @@ function allowedOrigin(req: Request, env: Env): string | null {
 }
 
 async function visitorId(ip: string, day: string): Promise<string> {
-  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`zoom-reader:${day}:${ip}`));
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`strata:${day}:${ip}`));
   return [...new Uint8Array(bytes)].slice(0, 12).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -72,11 +72,11 @@ export default {
 
     if (req.method === 'OPTIONS') return new Response(null, { status: origin ? 204 : 403, headers: cors });
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'zoom-reader', model: env.MODEL || DEFAULT_MODEL }, 200, cors);
+      return json({ ok: true, service: 'strata', model: env.MODEL || DEFAULT_MODEL }, 200, cors);
     }
     if (url.pathname !== '/v1/zoom') return json({ code: 'not-found', message: 'Not found.' }, 404, cors);
     if (req.method !== 'POST') return json({ code: 'bad-request', message: 'Use POST.' }, 405, cors);
-    if (!origin) return json({ code: 'forbidden', message: 'This server only answers Zoom Reader on emrekaraarslan.com.' }, 403);
+    if (!origin) return json({ code: 'forbidden', message: 'This server only answers Strata on emrekaraarslan.com.' }, 403);
 
     const length = Number(req.headers.get('content-length') ?? 0);
     if (length > MAX_BODY) return json({ code: 'bad-request', message: 'Request too large.' }, 413, cors);
@@ -143,7 +143,7 @@ export default {
       return json({ code: 'busy', message: 'The AI model is busy. Try again in a moment.' }, 503, cors);
     }
 
-    // Re-emit the model's stream in Zoom Reader's own simple format:
+    // Re-emit the model's stream in Strata's own simple format:
     //   data: {"t":"next piece of text"}   ...   data: [DONE]
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();

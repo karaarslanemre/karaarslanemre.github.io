@@ -94,7 +94,7 @@ content:
 
   - name: projects
     label: Projects
-    description: Tiles on the Projects page. Each tile links to the project's own page (like /projects/zoom-reader/) or to a site elsewhere.
+    description: Tiles on the Projects page. Each tile links to the project's own page (like /projects/strata/) or to a site elsewhere.
     type: collection
     path: src/content/projects
     filename: "{primary}.md"
@@ -120,7 +120,7 @@ content:
         type: text
       - name: link
         label: Link
-        description: A page on this site, like /projects/zoom-reader/, or a full web address for a project hosted elsewhere.
+        description: A page on this site, like /projects/strata/, or a full web address for a project hosted elsewhere.
         type: string
         required: true
       - name: label
@@ -180,16 +180,16 @@ content:
         label: Footer note
         type: string
 
-  - name: zoom-reader
-    label: Zoom Reader settings
-    description: Settings for the Zoom Reader project. You only need these once, when connecting its free AI server.
+  - name: strata
+    label: Strata settings
+    description: Settings for the Strata project. You only need these once, when connecting its free AI server.
     type: file
-    path: src/data/zoom-reader.json
+    path: src/data/strata.json
     format: json
     fields:
       - name: server
         label: Free server address
-        description: The address shown when the "Deploy Zoom Reader server" run on GitHub finishes, like https://zoom-reader.yourname.workers.dev. Leave empty to turn free explanations off; visitors can still try the example or use their own key.
+        description: The address shown when the "Deploy Strata server" run on GitHub finishes, like https://strata.yourname.workers.dev. Leave empty to turn free explanations off; visitors can still try the example or use their own key.
         type: string
       - name: modelLabel
         label: Model name shown to visitors

@@ -1,7 +1,7 @@
 // For testing on a computer without Cloudflare: same server, fake model.
 //   npx wrangler dev -c wrangler.test.jsonc
 {
-  "name": "zoom-reader-test",
+  "name": "strata-test",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "durable_objects": {

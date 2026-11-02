@@ -1,8 +1,8 @@
-name: Deploy Zoom Reader server
+name: Deploy Strata server
 
-# Publishes worker/ (Zoom Reader's free AI server) to Cloudflare whenever it
+# Publishes worker/ (Strata's free AI server) to Cloudflare whenever it
 # changes. It needs two repository secrets, CLOUDFLARE_API_TOKEN and
-# CLOUDFLARE_ACCOUNT_ID (see README → Zoom Reader). Until they're added, this
+# CLOUDFLARE_ACCOUNT_ID (see README → Strata). Until they're added, this
 # finishes without doing anything.
 
 on:
@@ -10,8 +10,8 @@ on:
     branches: [main]
     paths:
       - 'worker/**'
-      - 'src/zoom/prompts.ts'
-      - '.github/workflows/deploy-worker.yml'
+      - 'src/strata/prompts.ts'
+      - '.github/workflows/deploy-strata-server.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,7 +29,7 @@ jobs:
         run: |
           if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Cloudflare isn't connected yet, so the Zoom Reader server wasn't deployed. See README, section Zoom Reader."
+            echo "::notice::Cloudflare isn't connected yet, so the Strata server wasn't deployed. See README, section Strata."
           else
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
@@ -57,10 +57,10 @@ jobs:
           npx wrangler deploy 2>&1 | tee deploy.log
           URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           {
-            echo "### Zoom Reader server is live"
+            echo "### Strata server is live"
             echo ""
             echo "Address: \`$URL\`"
             echo ""
-            echo "Paste it into Pages CMS → Zoom Reader settings → Free server address (only needed the first time)."
+            echo "Paste it into Pages CMS → Strata settings → Free server address (only needed the first time)."
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice::Zoom Reader server address: $URL"
+          echo "::notice::Strata server address: $URL"

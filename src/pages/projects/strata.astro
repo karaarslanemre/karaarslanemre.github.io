@@ -3,8 +3,8 @@ import Base from '../../layouts/Base.astro';
 import Band from '../../components/Band.astro';
 import Figure from '../../components/Figure.astro';
 import MarginArt from '../../components/MarginArt.astro';
-import config from '../../data/zoom-reader.json';
-import '../../styles/zoom.css';
+import config from '../../data/strata.json';
+import '../../styles/strata.css';
 
 // The free server's address (the Cloudflare Worker). Empty until it's set up,
 // in which case visitors can still try the example or use their own key.
@@ -50,7 +50,7 @@ const levels = [
 ];
 const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
 ---
-<Base title="Zoom Reader" description={description} active="projects">
+<Base title="Strata" description={description} active="projects">
   {withCsp && <meta slot="head" http-equiv="Content-Security-Policy" content={csp} />}
   <meta slot="head" name="referrer" content="strict-origin-when-cross-origin" />
 
@@ -61,7 +61,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
     </Fragment>
     <Fragment slot="margin"><MarginArt kind="layers" /></Fragment>
     <div class="hero-wrap">
-      <h1 class="hero">Zoom Reader</h1>
+      <h1 class="hero">Strata</h1>
       <Figure kind="ribbon" />
     </div>
     <div class="lead">
@@ -203,7 +203,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
       <label class="zr-check"><input type="checkbox" name="remember" /> Remember on this device</label>
 
       <div class="zr-safety">
-        <p><strong>To be safe,</strong> make a separate key just for this, with a low spending limit, and delete it when you’re done. Google offers free Gemini keys, though on its free tier Google may use what you send to improve its products. <a href="https://github.com/karaarslanemre/karaarslanemre.github.io/tree/main/src/zoom" target="_blank" rel="noopener">Read the code ↗</a></p>
+        <p><strong>To be safe,</strong> make a separate key just for this, with a low spending limit, and delete it when you’re done. Google offers free Gemini keys, though on its free tier Google may use what you send to improve its products. <a href="https://github.com/karaarslanemre/karaarslanemre.github.io/tree/main/src/strata" target="_blank" rel="noopener">Read the code ↗</a></p>
       </div>
 
       <p class="zr-error" data-error hidden></p>
@@ -218,6 +218,6 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
   </dialog>
 
   <script>
-    import '../../zoom/app.ts';
+    import '../../strata/app.ts';
   </script>
 </Base>

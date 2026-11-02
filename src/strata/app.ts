@@ -1,4 +1,4 @@
-// Zoom Reader: the page's behavior.
+// Strata: the page's behavior.
 //
 // The reader shows a document at one of five levels (see segment.ts). The
 // whole document moves between levels with the zoom control, a pinch, Ctrl +
@@ -41,7 +41,7 @@ const LABEL: Record<string, string> = { '-2': 'Gist', '-1': 'Summary', '0': 'Ori
 const PASSAGE_LABEL: Record<string, string> = { '-1': 'In short', '0': 'Original', '1': 'Explained', '2': 'First principles' };
 const TASK_FOR: Record<string, Task> = { '-1': 'short', '1': 'explain', '2': 'basics' };
 const GIST_FROM_SUMMARIES_ABOVE = 6_000; // words
-const SAVE_KEY = 'zoom-reader:last';
+const SAVE_KEY = 'strata:last';
 
 const root = document.getElementById('zr')!;
 const config = { server: root.dataset.server ?? '', model: root.dataset.model ?? 'an open AI model' };
@@ -753,7 +753,7 @@ function showInput() {
 
 function checkSize(doc: Doc): string | null {
   if (doc.words < 20) return 'That’s too short to zoom. Paste at least a paragraph.';
-  if (doc.words > MAX_WORDS) return `That’s about ${doc.words.toLocaleString()} words. Zoom Reader handles up to ${MAX_WORDS.toLocaleString()} words (roughly 80 pages), so try a part of it.`;
+  if (doc.words > MAX_WORDS) return `That’s about ${doc.words.toLocaleString()} words. Strata handles up to ${MAX_WORDS.toLocaleString()} words (roughly 80 pages), so try a part of it.`;
   return null;
 }
 

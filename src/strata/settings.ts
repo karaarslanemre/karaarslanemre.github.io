@@ -14,7 +14,7 @@ export interface KeySettings {
   remember: boolean;
 }
 
-const STORE_KEY = 'zoom-reader:key';
+const STORE_KEY = 'strata:key';
 
 function storage(kind: 'session' | 'local'): Storage | null {
   try {

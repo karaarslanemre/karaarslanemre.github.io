@@ -8,7 +8,7 @@ export async function getProjects(): Promise<ProjectEntry[]> {
   return entries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
-/** Accepts a path on this site ("/projects/zoom-reader/") or a full web address. */
+/** Accepts a path on this site ("/projects/strata/") or a full web address. */
 export function projectHref(entry: ProjectEntry): string {
   const link = (entry.data.link ?? '').trim();
   if (!link) return '/projects/';
