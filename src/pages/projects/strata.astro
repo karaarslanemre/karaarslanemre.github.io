@@ -22,9 +22,9 @@ function serverUrl(value: string): string {
 }
 // Two builds of this page: the one on this site, and a copy hosted on
 // claude.ai ("Open in Claude"), where Claude writes the levels on each
-// visitor's own Claude plan. scripts/build-strata-claude.mjs makes the copy
-// by building with STRATA_TARGET=claude.
-const onClaude = process.env.STRATA_TARGET === 'claude';
+// visitor's own Claude plan. scripts/build-claude-copy.mjs makes the copy by
+// building with CLAUDE_COPY=1.
+const onClaude = !!process.env.CLAUDE_COPY;
 const server = onClaude ? '' : serverUrl(process.env.ZR_SERVER ?? config.server ?? '');
 const serverOrigin = server;
 

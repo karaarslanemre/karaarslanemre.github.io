@@ -1,0 +1,281 @@
+---
+import Base from '../../layouts/Base.astro';
+import Band from '../../components/Band.astro';
+import Figure from '../../components/Figure.astro';
+import MarginArt from '../../components/MarginArt.astro';
+import config from '../../data/tenor.json';
+import '../../styles/tenor.css';
+
+// Two builds of this page: the one on this site, which scores transcripts
+// with word lists in the visitor's browser, and a copy hosted on claude.ai
+// ("Open in Claude"), which adds Claude's verdict on each answer on the
+// visitor's own Claude plan. scripts/build-claude-copy.mjs makes the copy by
+// building with CLAUDE_COPY=1.
+const onClaude = !!process.env.CLAUDE_COPY;
+
+function claudeLink(value?: string): string {
+  try {
+    const url = new URL((value ?? '').trim());
+    return url.protocol === 'https:' && /(^|\.)claude\.ai$/.test(url.hostname) ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+const claudeUrl = onClaude ? '' : claudeLink(config.claude);
+
+// The page talks to nothing: transcripts are read and scored right here.
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+const withCsp = !process.env.ZR_PREVIEW && !onClaude;
+
+const description = 'Upload a company’s earnings call transcripts and see how management’s tone, hedging and answers change from one quarter to the next.';
+const measures = [
+  { name: 'Tone', desc: 'good-news minus bad-news words' },
+  { name: 'Hedging', desc: '“may”, “could”, “too early to say”' },
+  { name: 'Figures', desc: 'how many numbers they give' },
+  { name: 'Straight answers', desc: 'did the answer address the question?' },
+];
+---
+<Base title="Tenor" description={description} active="projects">
+  {withCsp && <meta slot="head" http-equiv="Content-Security-Policy" content={csp} />}
+
+  <Band hero center>
+    <Fragment slot="note">
+      <p><a href="/projects/">← All projects</a></p>
+      <p class="muted">Project 02<br />November 2026</p>
+    </Fragment>
+    <Fragment slot="margin"><MarginArt kind="chart" /></Fragment>
+    <div class="hero-wrap">
+      <h1 class="hero">Tenor</h1>
+      <Figure kind="chart" />
+    </div>
+    <div class="lead">
+      <p>Upload a company’s earnings call transcripts, one PDF per quarter, and see how management’s tone moves from call to call: in the script, in the answers, and topic by topic. Every score shows the words behind it.</p>
+    </div>
+  </Band>
+
+  <div id="tn" class="tn" data-target={onClaude ? 'claude' : 'site'} data-claude={claudeUrl}>
+    <Band id="tn-input">
+      <Fragment slot="note">
+        <p class="tn-label">What it measures</p>
+        <ul class="tn-legend">
+          {measures.map((m) => <li><strong>{m.name}</strong><br /><span class="muted">{m.desc}</span></li>)}
+        </ul>
+      </Fragment>
+
+      <div class="band-head"><h2 class="h2">Start with transcripts.</h2></div>
+
+      <p class="tn-continue" data-continue-wrap hidden>
+        Pick up where you left off: <button type="button" class="tn-link" data-continue><span data-continue-title></span> →</button>
+      </p>
+
+      <div class="tn-start">
+        <label class="tn-tile tn-drop" id="tn-drop" for="tn-file">
+          <span class="tn-tile-top"><span>(A)</span><span>PDF</span></span>
+          <span class="tn-tile-body">
+            <span class="tn-tile-title">Upload transcripts</span>
+            <span class="tn-tile-desc">Drop one call or several quarters at once, a PDF each. They’re read on your own device.</span>
+          </span>
+          <input type="file" id="tn-file" class="visually-hidden" accept="application/pdf,.pdf" multiple />
+        </label>
+
+        <form class="tn-tile tn-paste" id="tn-paste">
+          <span class="tn-tile-top"><span>(B)</span><span data-count></span></span>
+          <label class="tn-tile-title" for="tn-text">Paste a transcript</label>
+          <textarea id="tn-text" rows="7" placeholder="The full text of one call, from the title to the last question…" spellcheck="false"></textarea>
+          <button type="submit" class="tn-button">Add this call</button>
+        </form>
+      </div>
+
+      <p class="tn-example-line">
+        Or try it on an example: <button type="button" class="tn-link" data-example>eight quarters of Corvane Systems, a made-up company →</button>
+      </p>
+      {claudeUrl && (
+        <p class="tn-example-line tn-claude-line">
+          Have a Claude account? <a class="tn-link" href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a> to have Claude judge every answer and read the trend, on your own Claude plan.
+        </p>
+      )}
+
+      <p id="tn-status" class="tn-status" role="status" aria-live="polite" hidden></p>
+      {onClaude && (
+        <p class="tn-status" data-kind="error" data-claude-off hidden>
+          Claude can’t work on this page here. Open it in Claude, signed in to your account, for Claude’s verdicts. The scores below work anywhere.
+        </p>
+      )}
+
+      <div class="tn-calls" id="tn-calls" hidden>
+        <div class="tn-calls-head">
+          <h3 class="tn-h3" data-calls-title>Calls</h3>
+          <button type="button" class="tn-link" data-clear>Remove all</button>
+        </div>
+        <p class="tn-calls-hint">Quarters are read from each transcript. If one is wrong, edit it and the call moves into place.</p>
+        <ol class="tn-call-list" data-call-list></ol>
+      </div>
+
+      <div class="tn-fine">
+        {onClaude ? (
+          <p>
+            The scores come from counting words in your browser. Claude’s verdicts and its read of the trend are written by Claude
+            and count toward your own Claude plan; nothing is sent until you ask, and the first time Claude asks whether this page
+            may use it. Tenor also lives on <a class="tn-link" href="/projects/tenor/">my website ↗</a>.
+          </p>
+        ) : (
+          <p>
+            Everything here runs in your browser: transcripts aren’t uploaded anywhere, and the scores come from counting words
+            against lists written for earnings calls (see <a class="tn-link" href="#tn-method">how it’s measured</a>).
+            {claudeUrl && <> For Claude’s judgment of each answer, <a class="tn-link" href={claudeUrl} target="_blank" rel="noopener">open Tenor in Claude</a>.</>}
+          </p>
+        )}
+      </div>
+    </Band>
+
+    <div id="tn-results" hidden>
+      <Band id="tn-trend">
+        <Fragment slot="note">
+          <p class="tn-label">Company</p>
+          <p class="tn-company" data-company></p>
+          <p class="muted" data-range></p>
+          <p class="muted tn-small">Scores are for management’s own words. The operator and safe-harbor language are left out.</p>
+        </Fragment>
+
+        <div class="band-head"><h2 class="h2">How the tone moved.</h2></div>
+        <p class="tn-example-flag" data-example-flag hidden>Example: Corvane Systems is made up, and so is every word of its calls.</p>
+
+        <ul class="tn-findings" data-findings></ul>
+
+        {onClaude ? (
+          <div class="tn-claude-box" data-read>
+            <div class="tn-claude-actions">
+              <button type="button" class="tn-button" data-read-start>Ask Claude to read the trend</button>
+              <button type="button" class="tn-link" data-read-stop hidden>Stop</button>
+            </div>
+            <div class="tn-read" data-read-out hidden></div>
+          </div>
+        ) : (
+          claudeUrl && (
+            <p class="tn-claude-cta">
+              <a class="tn-link" href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a> to have Claude write a short read of these calls.
+            </p>
+          )
+        )}
+
+        <div class="tn-viz-head">
+          <ul class="tn-series-legend" aria-label="Lines in the first three charts">
+            <li><span class="tn-key" style="background: var(--tn-prep)"></span>Prepared remarks</li>
+            <li><span class="tn-key" style="background: var(--tn-qa)"></span>Answers in the Q&amp;A</li>
+          </ul>
+          <button type="button" class="tn-link" data-table-toggle aria-expanded="false">Show the numbers</button>
+        </div>
+        <div class="tn-charts" data-charts></div>
+        <div class="tn-table-wrap" data-table hidden></div>
+        <p class="tn-hint">Click a quarter on any chart to read that call below.</p>
+      </Band>
+
+      <Band id="tn-topics">
+        <Fragment slot="note">
+          <p class="tn-label">Reading the grid</p>
+          <p class="muted tn-small">Size: how often a topic came up, per 1,000 words of the call.</p>
+          <div class="tn-scale" aria-hidden="true">
+            <span class="tn-swatch" style="background: var(--tn-neg)"></span><span class="tn-swatch" style="background: color-mix(in oklab, var(--tn-neg) 45%, var(--tn-mid))"></span><span class="tn-swatch" style="background: var(--tn-mid)"></span><span class="tn-swatch" style="background: color-mix(in oklab, var(--tn-pos) 45%, var(--tn-mid))"></span><span class="tn-swatch" style="background: var(--tn-pos)"></span>
+          </div>
+          <p class="muted tn-small tn-scale-labels"><span>Bad news</span><span>Good news</span></p>
+          <p class="muted tn-small">Colour: management’s tone in the sentences that mention it. An empty ring means too few words to tell.</p>
+        </Fragment>
+
+        <div class="band-head"><h2 class="h2">What they talked about.</h2></div>
+        <div class="tn-grid-wrap" data-topics></div>
+        <p class="tn-quiet" data-quiet-topics hidden></p>
+
+        <form class="tn-add-topic" id="tn-add-topic">
+          <p class="tn-h3">Track your own topic</p>
+          <div class="tn-add-row">
+            <label class="tn-field"><span>Name</span><input id="tn-topic-name" type="text" placeholder="Data centers" autocomplete="off" /></label>
+            <label class="tn-field tn-field--wide"><span>Words to look for, separated by commas</span><input id="tn-topic-terms" type="text" placeholder="data center, data centers, hyperscaler*" autocomplete="off" /></label>
+            <button type="submit" class="tn-button">Add</button>
+          </div>
+          <p class="tn-small muted">End a word with * to match anything that starts with it.</p>
+        </form>
+      </Band>
+
+      <Band id="tn-call">
+        <Fragment slot="note">
+          <p class="tn-label">Pick a call</p>
+          <ol class="tn-picker" data-picker></ol>
+        </Fragment>
+
+        <div class="band-head tn-call-head">
+          <h2 class="h2" data-call-title></h2>
+          <p class="tn-call-meta" data-call-meta></p>
+        </div>
+        <ul class="tn-warnings" data-call-warnings></ul>
+
+        <h3 class="tn-h3">Scores by speaker</h3>
+        <div class="tn-table-wrap" data-scores></div>
+
+        <div class="tn-answers-head">
+          <h3 class="tn-h3">Answers to check</h3>
+          <label class="tn-check"><input type="checkbox" id="tn-all-answers" /> Show every answer</label>
+        </div>
+        {onClaude ? (
+          <div class="tn-claude-actions" data-judge>
+            <button type="button" class="tn-button" data-judge-one>Have Claude judge these answers</button>
+            <button type="button" class="tn-link" data-judge-all>Judge every call</button>
+            <span class="tn-small muted" data-judge-status></span>
+          </div>
+        ) : (
+          claudeUrl && (
+            <p class="tn-claude-cta">
+              These flags come from word rules. <a class="tn-link" href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a> to have Claude judge whether each answer answered the question.
+            </p>
+          )
+        )}
+        <ol class="tn-answers" data-answers></ol>
+
+        <details class="tn-transcript" data-transcript>
+          <summary>Read the call, with every counted word marked</summary>
+          <fieldset class="tn-marks">
+            <legend class="visually-hidden">Words to mark</legend>
+            <label class="tn-check"><input type="checkbox" data-mark="pos" checked /> <span class="tn-m tn-m-pos">Good news</span></label>
+            <label class="tn-check"><input type="checkbox" data-mark="neg" checked /> <span class="tn-m tn-m-neg">Bad news</span></label>
+            <label class="tn-check"><input type="checkbox" data-mark="hedge" checked /> <span class="tn-m tn-m-hedge">Hedges</span></label>
+            <label class="tn-check"><input type="checkbox" data-mark="strong" /> <span class="tn-m tn-m-strong">Will, must</span></label>
+          </fieldset>
+          <div class="tn-turns" data-turns></div>
+        </details>
+      </Band>
+
+      <Band id="tn-method">
+        <Fragment slot="note"><p class="tn-label">Method</p></Fragment>
+        <div class="band-head"><h2 class="h2">How it’s measured.</h2></div>
+        <dl class="tn-method">
+          <dt>Tone</dt>
+          <dd>Good-news words minus bad-news words, per 1,000 words spoken. “Strong”, “record revenue” and “improved” count as good news; “headwinds”, “softness” and “decline” as bad. A good-news word right after “not” or “no” counts as bad news.</dd>
+          <dt>Hedging</dt>
+          <dd>Words and phrases that avoid committing (“uncertain”, “depends”, “too early”, “we’ll see”) plus weak modals (“may”, “could”, “might”), per 1,000 words.</dd>
+          <dt>Figures</dt>
+          <dd>Numbers given, per 1,000 words. Years don’t count. A management team that starts giving fewer numbers is often worth a closer look.</dd>
+          <dt>Possible non-answers</dt>
+          <dd>An answer is flagged when two or more signals line up: a deflecting phrase (“we don’t break that out”, “too early to say”, “as I mentioned”), a question that asks for a figure and an answer without one, an answer that uses few of the question’s own terms, or a short reply to a long question.</dd>
+          <dt>What’s left out</dt>
+          <dd>The operator, and safe-harbor and non-GAAP language, which reads as hedging but is legal boilerplate. Analysts’ questions are scored separately.</dd>
+          <dt>Limits</dt>
+          <dd>Word lists don’t understand context. “Demand wasn’t as weak as feared” scores as bad news, and an executive can answer a question in different words. Compare a company with its own past calls rather than with other companies, and read the flagged passages before drawing conclusions. The word lists were written for this tool, drawing on how finance research measures the tone of company filings.</dd>
+        </dl>
+      </Band>
+    </div>
+  </div>
+
+  <script>
+    import '../../tenor/app.ts';
+  </script>
+</Base>

@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "build:claude": "node scripts/build-strata-claude.mjs"
+    "build:claude": "node scripts/build-claude-copy.mjs"
   },
   "dependencies": {
     "astro": "^7.3.8",

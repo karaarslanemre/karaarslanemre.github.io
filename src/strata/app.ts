@@ -47,7 +47,7 @@ const root = document.getElementById('zr')!;
 const config = {
   server: root.dataset.server ?? '',
   model: root.dataset.model ?? 'an open AI model',
-  // True in the copy of Strata hosted on claude.ai (see scripts/build-strata-claude.mjs).
+  // True in the copy of Strata hosted on claude.ai (see scripts/build-claude-copy.mjs).
   onClaude: root.dataset.target === 'claude',
   // On the site: the address of that copy, offered as "Open in Claude".
   claudeUrl: root.dataset.claude ?? '',

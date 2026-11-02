@@ -199,3 +199,15 @@ content:
         label: Open in Claude link
         description: The claude.ai link to the copy of Strata that runs on each visitor's own Claude plan. Leave empty to hide the "Open in Claude" links.
         type: string
+
+  - name: tenor
+    label: Tenor settings
+    description: Settings for the Tenor project.
+    type: file
+    path: src/data/tenor.json
+    format: json
+    fields:
+      - name: claude
+        label: Open in Claude link
+        description: The claude.ai link to the copy of Tenor where Claude judges each answer, on each visitor's own Claude plan. Leave empty to hide the "Open in Claude" links.
+        type: string

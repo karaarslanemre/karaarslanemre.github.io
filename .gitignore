@@ -3,4 +3,4 @@ dist/
 .astro/
 .DS_Store
 .wrangler/
-.strata-claude/
+.claude-copies/
