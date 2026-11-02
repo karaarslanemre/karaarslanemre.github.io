@@ -36,23 +36,26 @@ export class AiError extends Error {
   }
 }
 
-export const PROVIDERS: Record<Provider, { name: string; model: string; keyUrl: string; keyHint: string }> = {
+export const PROVIDERS: Record<Provider, { name: string; model: string; keyUrl: string; keyLabel: string; keyHint: string }> = {
   anthropic: {
     name: 'Anthropic (Claude)',
     model: 'claude-haiku-5-5',
-    keyUrl: 'https://platform.claude.com/',
+    keyUrl: 'https://platform.claude.com/settings/keys',
+    keyLabel: 'Get an Anthropic key',
     keyHint: 'sk-ant-…',
   },
   gemini: {
     name: 'Google (Gemini)',
     model: 'gemini-flash-latest',
     keyUrl: 'https://aistudio.google.com/apikey',
+    keyLabel: 'Get a Gemini key',
     keyHint: 'AIza…',
   },
   openai: {
     name: 'OpenAI',
     model: 'gpt-5-mini',
     keyUrl: 'https://platform.openai.com/api-keys',
+    keyLabel: 'Get an OpenAI key',
     keyHint: 'sk-…',
   },
 };
@@ -109,6 +112,12 @@ async function errorFrom(res: Response, route: Route): Promise<AiError> {
     return new AiError('busy', message || `The server answered ${res.status}.`);
   }
   const who = PROVIDERS[route.provider!].name;
+  if (route.provider === 'anthropic' && /anthropic-workspace-id/i.test(message)) {
+    return new AiError(
+      'auth',
+      'This Anthropic key isn’t tied to a workspace. In the Claude Console, create a key inside a workspace (where you can also set a spending limit) and paste that one instead.',
+    );
+  }
   if (res.status === 401 || res.status === 403 || /api[_ ]?key/i.test(message) && res.status === 400) {
     return new AiError('auth', `${who} didn’t accept this key. ${message}`.trim());
   }

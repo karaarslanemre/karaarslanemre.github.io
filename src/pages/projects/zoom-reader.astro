@@ -115,8 +115,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
           Explanations are written by an AI model, {config.modelLabel}, running on Cloudflare’s free daily allowance, which
           every visitor shares. If it runs out, you can carry on with your own API key
           (<button type="button" class="zr-link" data-input-settings>AI settings</button>). Only the passages you zoom into are
-          sent to the AI, and this site doesn’t keep your document. AI can get things wrong, so check anything important
-          against the original.
+          sent to the AI, and this site doesn’t keep your document.
         </p>
       </div>
     </Band>
@@ -190,7 +189,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
         <span>API key</span>
         <input name="key" type="password" autocomplete="off" spellcheck="false" />
       </label>
-      <p class="zr-get-key"><a data-get-key href="https://platform.claude.com/" target="_blank" rel="noopener noreferrer">Get a key ↗</a></p>
+      <p class="zr-get-key"><a data-get-key href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer">Get an Anthropic key ↗</a></p>
 
       <details class="zr-model">
         <summary>Model (optional)</summary>
@@ -204,7 +203,6 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
       <label class="zr-check"><input type="checkbox" name="remember" /> Remember on this device</label>
 
       <div class="zr-safety">
-        <p><strong>Where your key goes.</strong> Straight from your browser to the company you picked, and nowhere else. It never reaches this site’s server, and I never see it. It’s forgotten when you close this tab unless you tick “Remember”.</p>
         <p><strong>To be safe,</strong> make a separate key just for this, with a low spending limit, and delete it when you’re done. Google offers free Gemini keys, though on its free tier Google may use what you send to improve its products. <a href="https://github.com/karaarslanemre/karaarslanemre.github.io/tree/main/src/zoom" target="_blank" rel="noopener">Read the code ↗</a></p>
       </div>
 

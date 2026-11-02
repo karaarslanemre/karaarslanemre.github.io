@@ -97,7 +97,7 @@ export function openKeyDialog(dialog: HTMLDialogElement, reason?: string): Promi
   const sync = () => {
     const p = (providerInputs.find((i) => i.checked)?.value ?? 'anthropic') as Provider;
     getLink.href = PROVIDERS[p].keyUrl;
-    getLink.textContent = `Get a ${PROVIDERS[p].name.replace(/ \(.*\)/, '')} key ↗`;
+    getLink.textContent = `${PROVIDERS[p].keyLabel} ↗`;
     keyInput.placeholder = PROVIDERS[p].keyHint;
     modelInput.placeholder = PROVIDERS[p].model;
   };
