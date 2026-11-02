@@ -117,6 +117,7 @@
 .zr-paste .zr-button { align-self: flex-start; }
 
 .zr-example-line { margin-top: 1.75rem; font-family: var(--font-sans); font-size: 1.0625rem; }
+.zr-claude-line { margin-top: 0.5rem; }
 .zr-status { margin-top: 1.25rem; font-family: var(--font-sans); font-size: 1rem; }
 .zr-status[data-kind="error"] { color: var(--zr-error); }
 .zr-fine { margin-top: 3rem; max-width: 40em; color: var(--muted); font-size: 1.0625rem; line-height: 1.45; }
@@ -395,6 +396,8 @@
 .zr-dialog form { display: flex; flex-direction: column; gap: 1.1rem; }
 .zr-dialog-title { font-family: var(--font-sans); font-weight: 400; font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.015em; }
 .zr-dialog-reason { font-size: 1.0625rem; }
+.zr-dialog-alt { font-family: var(--font-sans); font-size: 0.9375rem; }
+.zr-dialog-alt a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 .zr-providers { display: flex; flex-direction: column; gap: 0.4rem; margin: 0; padding: 0; border: 0; font-size: 1.0625rem; }
 .zr-providers legend, .zr-field > span {
   margin-bottom: 0.4rem;

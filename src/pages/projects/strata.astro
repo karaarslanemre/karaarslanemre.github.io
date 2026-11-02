@@ -20,8 +20,25 @@ function serverUrl(value: string): string {
     return '';
   }
 }
-const server = serverUrl(process.env.ZR_SERVER ?? config.server ?? '');
+// Two builds of this page: the one on this site, and a copy hosted on
+// claude.ai ("Open in Claude"), where Claude writes the levels on each
+// visitor's own Claude plan. scripts/build-strata-claude.mjs makes the copy
+// by building with STRATA_TARGET=claude.
+const onClaude = process.env.STRATA_TARGET === 'claude';
+const server = onClaude ? '' : serverUrl(process.env.ZR_SERVER ?? config.server ?? '');
 const serverOrigin = server;
+
+// The claude.ai copy's address, from src/data/strata.json. Shown only on
+// this site, and only once it's a claude.ai link.
+function claudeLink(value?: string): string {
+  try {
+    const url = new URL((value ?? '').trim());
+    return url.protocol === 'https:' && /(^|\.)claude\.ai$/.test(url.hostname) ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+const claudeUrl = onClaude ? '' : claudeLink((config as { claude?: string }).claude);
 
 // Lock the page down: it may only load its own files and Google Fonts, and
 // only talk to the free server and the three AI companies. This is what keeps
@@ -38,7 +55,7 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
 ].join('; ');
-const withCsp = !process.env.ZR_PREVIEW;
+const withCsp = !process.env.ZR_PREVIEW && !onClaude;
 
 const description = 'Upload a PDF or paste any text, then zoom in to have it explained from first principles, or zoom out to see the summary.';
 const levels = [
@@ -69,7 +86,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
     </div>
   </Band>
 
-  <div id="zr" class="zr" data-server={server} data-model={config.modelLabel}>
+  <div id="zr" class="zr" data-server={server} data-model={config.modelLabel} data-target={onClaude ? 'claude' : 'site'} data-claude={claudeUrl}>
     <Band id="zr-input">
       <Fragment slot="note">
         <p class="zr-legend-title">Five levels</p>
@@ -107,16 +124,35 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
       <p class="zr-example-line">
         Or try it on an example: <button type="button" class="zr-link" data-example>my essay “Actuators” →</button>
       </p>
+      {claudeUrl && (
+        <p class="zr-example-line zr-claude-line">
+          Have a Claude account? <a class="zr-link" href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a> to run Strata on your own Claude plan, with no key.
+        </p>
+      )}
 
       <p id="zr-status" class="zr-status" role="status" aria-live="polite" hidden></p>
 
-      <div class="zr-fine">
-        <p>
-          Explanations are written by an AI model, {config.modelLabel}, running on Cloudflare’s free daily allowance, which
-          every visitor shares. If it runs out, you can carry on with your own API key
-          (<button type="button" class="zr-link" data-input-settings>AI settings</button>). Only the passages you zoom into are
-          sent to the AI, and this site doesn’t keep your document.
+      {onClaude && (
+        <p class="zr-status" data-kind="error" data-claude-off hidden>
+          Claude can’t write explanations here. Open this page in Claude, signed in to your account. The example works anywhere.
         </p>
+      )}
+
+      <div class="zr-fine">
+        {onClaude ? (
+          <p>
+            Explanations are written by Claude and count toward your own Claude plan. The first time you zoom, Claude asks
+            whether this page may use it. Only the passages you zoom into are sent to Claude, and nothing is kept. Strata also
+            lives on <a class="zr-link" href="/projects/strata/">my website ↗</a>.
+          </p>
+        ) : (
+          <p>
+            Explanations are written by an AI model, {config.modelLabel}, running on Cloudflare’s free daily allowance, which
+            every visitor shares. If it runs out, you can carry on with your own API key
+            (<button type="button" class="zr-link" data-input-settings>AI settings</button>){claudeUrl && <> or <a class="zr-link" href={claudeUrl} target="_blank" rel="noopener">open Strata in Claude</a></>}. Only the passages you zoom into are
+            sent to the AI, and this site doesn’t keep your document.
+          </p>
+        )}
       </div>
     </Band>
 
@@ -126,7 +162,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
           <p class="zr-doc-title" data-doc-title></p>
           <p class="zr-tb-actions">
             <button type="button" class="zr-link" data-new>New document</button>
-            <button type="button" class="zr-link" data-settings>AI settings</button>
+            {!onClaude && <button type="button" class="zr-link" data-settings>AI settings</button>}
           </p>
         </div>
         <div class="zr-tb-main">
@@ -167,16 +203,23 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
     <div class="zr-notice" id="zr-notice" role="alert" hidden>
       <p data-notice-text></p>
       <p class="zr-notice-actions">
-        <button type="button" class="zr-button" data-notice-key>Use my own API key</button>
+        {claudeUrl && <a class="zr-button" href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a>}
+        <button type="button" class={claudeUrl ? 'zr-link' : 'zr-button'} data-notice-key>Use my own API key</button>
         <button type="button" class="zr-link" data-notice-close>Not now</button>
       </p>
     </div>
   </div>
 
-  <dialog id="zr-key-dialog" class="zr-dialog" aria-labelledby="zr-key-title">
+  {!onClaude && <dialog id="zr-key-dialog" class="zr-dialog" aria-labelledby="zr-key-title">
     <form method="dialog">
       <h2 id="zr-key-title" class="zr-dialog-title">Use your own API key</h2>
       <p class="zr-dialog-reason" data-reason hidden></p>
+      {claudeUrl && (
+        <p class="zr-dialog-alt">
+          Have a Claude account? <a href={claudeUrl} target="_blank" rel="noopener">Open in Claude ↗</a> instead and Strata runs on
+          your own Claude plan, with no key.
+        </p>
+      )}
 
       <fieldset class="zr-providers">
         <legend>AI company</legend>
@@ -215,7 +258,7 @@ const sign = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
         <button value="save" class="zr-button">Save and continue</button>
       </div>
     </form>
-  </dialog>
+  </dialog>}
 
   <script>
     import '../../strata/app.ts';

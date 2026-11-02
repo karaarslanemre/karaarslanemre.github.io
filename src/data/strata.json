@@ -1,4 +1,5 @@
 {
   "server": "https://strata.karaarslanemre527.workers.dev",
-  "modelLabel": "Gemma 4"
+  "modelLabel": "Gemma 4",
+  "claude": "https://claude.ai/artifact/TeWD2aUrfRKgJeqrjpaGie"
 }

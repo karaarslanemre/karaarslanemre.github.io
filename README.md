@@ -95,6 +95,14 @@ Everything else is written by an AI model when a visitor zooms in or out:
 
 - **Free, by default.** A small Cloudflare Worker (`worker/`) runs an open model, Gemma 4, on Cloudflare's free daily Workers AI allowance (10,000 "neurons", roughly 15 to 25 documents a day across all visitors). The free plan can't go over, so there's never a bill. The Worker only runs Strata's own tasks, only answers your site, and lets no single visitor use more than a quarter of the day.
 - **Visitors' own key, after that.** When the day's allowance is used up, visitors can paste an Anthropic, Google Gemini or OpenAI key. It goes straight from their browser to that company. It never reaches the Worker, and the page is locked down so it can't be sent anywhere else.
+- **Open in Claude, any time.** Visitors with a Claude account can open a copy of Strata hosted on claude.ai, where Claude writes the levels on *their own* Claude plan: no key, and no cost to you. The site links to it from the start of the page, the key dialog, and the notice that appears when the free allowance runs out.
+
+### The Open in Claude copy
+
+The copy is built from the same code as the page here, so it behaves the same. Its address is **Open in Claude link** in Pages CMS → **Strata settings** (`claude` in `src/data/strata.json`); leave it empty to hide the links.
+
+- **Who can open it:** the copy is private until you share it. In Claude, open it, click **Share**, and choose that anyone with the link can view it. Visitors then sign in with their own Claude account, and Claude asks them once whether the page may use it.
+- **After changing Strata:** the copy doesn't update by itself. Run `npm run build:claude`, which writes `.strata-claude/strata.html`, then ask Claude to republish that file to the link above (it needs the `sample` capability). Or just ask Claude to "rebuild and republish the Open in Claude copy of Strata".
 
 ### Connect the free server (one time, about 10 minutes)
 
@@ -116,6 +124,7 @@ After that, any change to `worker/` deploys itself. If a deploy ever fails with 
 | The example document | `src/strata/example.ts` |
 | Look and feel | `src/styles/strata.css` |
 | Page text | `src/pages/projects/strata.astro` |
+| The Open in Claude copy (how it's built) | `scripts/build-strata-claude.mjs` |
 
 To try the server on your own computer: `cd worker && npm install && npm run dev` starts it with a fake model, and `ZR_SERVER=http://127.0.0.1:8787 npm run dev` (from the main folder) points the page at it.
 

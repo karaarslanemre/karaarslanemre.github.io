@@ -8,7 +8,7 @@
 // AI-written levels are only requested for what is on screen, a moment after
 // zooming stops, and each answer is kept so zooming back costs nothing.
 
-import { AiError, PROVIDERS, runTask, type Route } from './ai';
+import { AiError, claudeSample, PROVIDERS, runTask, type Route } from './ai';
 import { mdToHtml, plainToHtml } from './markdown';
 import { parseSummary, type Task, type TaskInput } from './prompts';
 import { blocksFromText, buildDoc, countWords, MAX_WORDS, type Doc, type Section } from './segment';
@@ -44,7 +44,14 @@ const GIST_FROM_SUMMARIES_ABOVE = 6_000; // words
 const SAVE_KEY = 'strata:last';
 
 const root = document.getElementById('zr')!;
-const config = { server: root.dataset.server ?? '', model: root.dataset.model ?? 'an open AI model' };
+const config = {
+  server: root.dataset.server ?? '',
+  model: root.dataset.model ?? 'an open AI model',
+  // True in the copy of Strata hosted on claude.ai (see scripts/build-strata-claude.mjs).
+  onClaude: root.dataset.target === 'claude',
+  // On the site: the address of that copy, offered as "Open in Claude".
+  claudeUrl: root.dataset.claude ?? '',
+};
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, el: ParentNode = root) => el.querySelector<T>(sel)!;
 
 const view = {
@@ -56,7 +63,7 @@ const view = {
   mode: $('[data-mode]'),
   status: $('#zr-status'),
   notice: $('#zr-notice'),
-  dialog: document.getElementById('zr-key-dialog') as HTMLDialogElement,
+  dialog: document.getElementById('zr-key-dialog') as HTMLDialogElement | null, // not on claude.ai
   scale: $('.zr-scale'),
 };
 
@@ -82,6 +89,7 @@ const state = {
 // ---------------------------------------------------------------------------
 
 function route(): Route {
+  if (config.onClaude) return { mode: 'claude' };
   const key = loadKey();
   if (key && (state.useKey || !config.server || state.blocked)) {
     return { mode: 'key', provider: key.provider, key: key.key, model: key.model };
@@ -96,7 +104,9 @@ function updateModeLabel() {
     return;
   }
   const r = route();
-  if (r.mode === 'key') {
+  if (r.mode === 'claude') {
+    view.mode.textContent = 'Claude · on your own Claude plan';
+  } else if (r.mode === 'key') {
     view.mode.textContent = `Using your ${PROVIDERS[r.provider!].name.replace(/ \(.*\)/, '')} key`;
   } else if (!config.server) {
     view.mode.textContent = 'Free explanations aren’t switched on yet';
@@ -153,7 +163,7 @@ let running = 0;
 const waiting: Array<() => void> = [];
 const slot = () =>
   new Promise<void>((resolve) => {
-    const limit = route().mode === 'free' ? 2 : 3;
+    const limit = route().mode === 'key' ? 3 : 2;
     if (running < limit) {
       running++;
       resolve();
@@ -273,11 +283,14 @@ function block(code: 'allowance' | 'visitor-limit') {
     code === 'allowance'
       ? `Today’s free allowance is used up. It resets at ${resetTime()} your time.`
       : `You’ve used your share of today’s free allowance, so other visitors get a turn. It resets at ${resetTime()} your time.`;
-  $('[data-notice-text]', view.notice).textContent = `${text} To keep going now, use your own API key.`;
+  $('[data-notice-text]', view.notice).textContent = config.claudeUrl
+    ? `${text} To keep going now, open Strata in Claude, which runs on your own Claude plan, or use your own API key.`
+    : `${text} To keep going now, use your own API key.`;
   view.notice.hidden = false;
 }
 
 async function askForKey(reason?: string) {
+  if (!view.dialog) return;
   const saved = await openKeyDialog(view.dialog, reason);
   if (!saved) return;
   state.useKey = true;
@@ -404,13 +417,22 @@ function waitingHtml(spec: RowSpec, entry?: Entry): string {
     <div class="zr-ghost" aria-hidden="true">${plainToHtml(ghost.length > 700 ? ghost.slice(0, 700) + '…' : ghost)}</div>`;
 }
 
+const openInClaude = () =>
+  config.claudeUrl ? ` <a class="zr-link" href="${esc(config.claudeUrl)}" target="_blank" rel="noopener">Open in Claude ↗</a>` : '';
+
 function errorHtml(entry: Entry): string {
   const e = entry.error!;
   let msg = e.message || 'Something went wrong.';
   let action = `<button type="button" class="zr-link" data-retry>Try again</button>`;
+  if (route().mode === 'claude') {
+    // Signing in again or allowing the page both need a reload, so a retry
+    // button would only fail again.
+    if (['not-allowed', 'no-route', 'auth'].includes(e.code)) action = '';
+    return `<p class="zr-error">${esc(msg)}</p>${action ? `<p class="zr-actions">${action}</p>` : ''}`;
+  }
   if (e.code === 'allowance' || e.code === 'visitor-limit') {
     msg = e.code === 'allowance' ? 'Paused: today’s free allowance is used up.' : 'Paused: you’ve used your share of today’s free allowance.';
-    action = `<button type="button" class="zr-link" data-key>Use my own API key</button>`;
+    action = `<button type="button" class="zr-link" data-key>Use my own API key</button>${openInClaude()}`;
   } else if (e.code === 'no-route') {
     msg = config.server
       ? 'Add your API key to write this level.'
@@ -631,7 +653,7 @@ view.rows.addEventListener('click', (e) => {
 
 // Keyboard: + / − anywhere on the page (not while typing)
 document.addEventListener('keydown', (e) => {
-  if (view.reader.hidden || e.ctrlKey || e.metaKey || view.dialog.open) return;
+  if (view.reader.hidden || e.ctrlKey || e.metaKey || view.dialog?.open) return;
   const t = e.target as HTMLElement;
   if (t.closest('input, textarea, select, [contenteditable="true"]')) return;
   if (e.key === '+' || e.key === '=') {
@@ -893,3 +915,12 @@ $('[data-hint]').textContent = coarse
   ? 'Pinch to zoom everything. Tap a passage to zoom into it.'
   : 'Pinch, Ctrl + scroll or press + and − to zoom the whole document. Click a passage to zoom into just that part, Shift-click to zoom out.';
 showContinue();
+
+// On claude.ai, say plainly when Claude can't write here (signed out, or the
+// page was opened outside Claude). The example still works.
+if (config.onClaude) {
+  claudeSample().then((sample) => {
+    const off = root.querySelector<HTMLElement>('[data-claude-off]');
+    if (off) off.hidden = !!sample;
+  });
+}

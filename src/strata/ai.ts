@@ -1,18 +1,21 @@
 // Sends one zoom task to an AI model and streams the answer back.
 //
-// Two routes:
-//   free  → the site's Cloudflare Worker, which runs an open model on
-//           Cloudflare's free daily allowance (worker/src/index.ts)
-//   key   → straight from the visitor's browser to Anthropic, Google or
-//           OpenAI with the visitor's own key. The key is never sent to the
-//           Worker or anywhere else.
+// Three routes:
+//   free   → the site's Cloudflare Worker, which runs an open model on
+//            Cloudflare's free daily allowance (worker/src/index.ts)
+//   key    → straight from the visitor's browser to Anthropic, Google or
+//            OpenAI with the visitor's own key. The key is never sent to the
+//            Worker or anywhere else.
+//   claude → only in the copy of Strata hosted on claude.ai: Claude writes
+//            the levels on the visitor's own Claude plan, through the page's
+//            "sample" capability. No key and no server.
 
 import { buildPrompt, cleanOutput, type TaskInput } from './prompts';
 
 export type Provider = 'anthropic' | 'gemini' | 'openai';
 
 export interface Route {
-  mode: 'free' | 'key';
+  mode: 'free' | 'key' | 'claude';
   server?: string;
   provider?: Provider;
   key?: string;
@@ -24,8 +27,9 @@ export type ErrorCode =
   | 'visitor-limit' // this visitor has used their share of today's allowance
   | 'slow-down' // too many requests in a short time
   | 'busy' // the model or server had a problem; trying again may work
-  | 'auth' // the visitor's key was rejected
+  | 'auth' // the visitor's key was rejected (or, on claude.ai, they need to sign in again)
   | 'quota' // the visitor's own account is out of credit or rate limited
+  | 'not-allowed' // on claude.ai: the visitor didn't let this page use Claude
   | 'no-route' // nothing to send the request to
   | 'bad-request'
   | 'aborted';
@@ -138,6 +142,7 @@ export async function runTask(
   onText: (sofar: string) => void,
   signal?: AbortSignal,
 ): Promise<string> {
+  if (route.mode === 'claude') return runOnClaude(input, onText, signal);
   let text = '';
   const add = (piece: unknown) => {
     if (typeof piece !== 'string' || !piece) return;
@@ -187,6 +192,87 @@ export async function runTask(
   const out = cleanOutput(text);
   if (!out) throw streamError ?? new AiError('busy', 'The model returned an empty answer. Try again.');
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// The claude.ai route
+// ---------------------------------------------------------------------------
+
+interface SampleError {
+  code: string;
+  message: string;
+  text?: string;
+}
+type Sample = (
+  input: string,
+  options: { modelTier?: 'quick' | 'default' | 'complex'; signal?: AbortSignal; onText?: (u: { text: string }) => void },
+) => Promise<{ text: string; truncated: boolean }>;
+
+let sampleReady: Promise<Sample | null> | null = null;
+
+/**
+ * Claude's "sample" capability, or null when this page isn't open inside
+ * Claude (or the viewer isn't signed in). Asks the viewer nothing: Claude asks
+ * whether the page may use it at the first explanation.
+ */
+export function claudeSample(): Promise<Sample | null> {
+  if (!sampleReady) {
+    const claude = (window as unknown as { claude?: { use?: (name: string) => Promise<unknown> } }).claude;
+    sampleReady = claude?.use
+      ? claude.use('sample').then((s) => (typeof s === 'function' ? (s as Sample) : null)).catch(() => null)
+      : Promise.resolve(null);
+  }
+  return sampleReady;
+}
+
+function claudeError(e: SampleError): AiError {
+  switch (e?.code) {
+    case 'cancelled':
+      return new AiError('aborted', 'Stopped.');
+    case 'not_granted':
+      return new AiError('not-allowed', 'Claude wasn’t allowed to write for this page. Reload the page to be asked again.');
+    case 'sampling_disabled':
+    case 'not_declared':
+    case 'capability_disabled':
+    case 'capability_removed':
+      return new AiError('no-route', 'Claude can’t write explanations for this account here.');
+    case 'session_expired':
+      return new AiError('auth', 'Your Claude session has ended. Sign in to Claude again, then reload this page.');
+    case 'rate_limited':
+      return new AiError('quota', 'You’ve hit a Claude usage limit, or too much was asked at once. Wait a little, then try again.');
+    case 'refused':
+      return new AiError('bad-request', 'Claude declined to rewrite this passage.');
+    case 'prompt_too_large':
+    case 'invalid_request':
+    case 'transform_error':
+      return new AiError('bad-request', 'This passage couldn’t be sent to Claude.');
+    case 'empty_completion':
+      return new AiError('busy', 'Claude returned an empty answer. Try again.');
+    default:
+      return new AiError('busy', 'Claude had a problem writing this. Try again.');
+  }
+}
+
+async function runOnClaude(input: TaskInput, onText: (sofar: string) => void, signal?: AbortSignal): Promise<string> {
+  const sample = await claudeSample();
+  if (!sample) throw new AiError('no-route', 'Open this page in Claude, signed in, to have Claude write the explanations.');
+  if (signal?.aborted) throw new AiError('aborted', 'Stopped.');
+  // Claude's pages have no separate system prompt, so the instructions lead.
+  const prompt = buildPrompt(input);
+  try {
+    const { text } = await sample(`${prompt.system}\n\n${prompt.user}`, {
+      // The fastest model: each zoom should feel like turning a page.
+      modelTier: 'quick',
+      signal,
+      onText: ({ text: sofar }) => onText(cleanOutput(sofar)),
+    });
+    const out = cleanOutput(text);
+    if (!out) throw new AiError('busy', 'Claude returned an empty answer. Try again.');
+    return out;
+  } catch (err) {
+    if (err instanceof AiError) throw err;
+    throw claudeError(err as SampleError);
+  }
 }
 
 function send(route: Route, input: TaskInput, signal?: AbortSignal): Promise<Response> {
