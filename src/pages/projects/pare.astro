@@ -24,12 +24,13 @@ const csp = [
 ].join('; ');
 const withCsp = !process.env.ZR_PREVIEW;
 
-const description = 'Turn PDFs into clean text that costs Claude far fewer tokens to read. See the estimate before and after, then download.';
+const description = 'Turn PDFs, including 10-Ks and 10-Qs, into clean text that costs Claude far fewer tokens to read. Tables are rebuilt as rows and columns, and every figure is checked.';
 const removes = [
   { name: 'Page images', desc: 'a PDF sends a picture of every page, often the biggest cost' },
   { name: 'Headers and footers', desc: 'the same lines repeated on every page' },
   { name: 'Page numbers', desc: 'and stray URLs in the margins' },
   { name: 'Broken lines', desc: 'lines and hyphenated words joined back into paragraphs' },
+  { name: 'Nothing that matters', desc: 'tables are rebuilt as rows and columns, and every figure is checked' },
 ];
 ---
 <Base title="Pare" description={description} active="projects">
@@ -46,7 +47,7 @@ const removes = [
       <Figure kind="orbit" />
     </div>
     <div class="lead">
-      <p>When Claude reads a PDF, it gets each page twice: the text, and a picture of the page. For reports, papers and contracts, where the words are what matter, the picture is mostly cost. Pare turns PDFs into clean text or Markdown and shows how many tokens you save.</p>
+      <p>When Claude reads a PDF, it gets each page twice: the text, and a picture of the page. For reports, filings and contracts, where the words and figures are what matter, the picture is mostly cost. Pare turns PDFs into clean text or Markdown, rebuilds tables like a 10-K’s financial statements as rows and columns, and shows how many tokens you save.</p>
     </div>
   </Band>
 
@@ -145,6 +146,7 @@ const removes = [
             <button type="button" class="pr-link" data-download>Download</button>
           </div>
         </div>
+        <p class="pr-check" data-check></p>
         <ul class="pr-warnings" data-warnings></ul>
         <textarea class="pr-text" data-preview readonly spellcheck="false" aria-label="Converted text"></textarea>
       </Band>
@@ -157,9 +159,13 @@ const removes = [
         <dt>As a PDF</dt>
         <dd>Anthropic’s documentation says a PDF is sent to Claude as each page’s extracted text plus an image of each page. Text runs about 4 characters a token, and Claude 4.7 and later count about 30% more tokens for the same text. An image costs one token per 28 × 28 pixel square. The docs don’t say how large a page is drawn, so Pare assumes the largest the model accepts (about 4,700 tokens a page for Claude 4.7 and later, 1,500 for earlier models). Treat the PDF figure as an upper estimate.</dd>
         <dt>As text</dt>
-        <dd>The cleaned text, counted the same way. Repeated headers and footers, page numbers and margin URLs are dropped; lines are joined back into paragraphs; larger type becomes headings.</dd>
+        <dd>The cleaned text, counted the same way. Repeated headers and footers, page numbers and margin URLs are dropped; lines are joined back into paragraphs; larger type, and the parts and items of a filing, become headings.</dd>
+        <dt>Tables</dt>
+        <dd>Pare finds tables from where text sits on the page, so it works for any company’s filings, not a list of known layouts. Figures in financial tables are right-aligned, so a column is where its figures end. Headers stacked over several lines are put back together, and a header like “Three Months Ended” is applied to each column beneath it, so every column reads in full (“Three Months Ended September 30, 2026”). A label that wraps onto a second line, a row split across a page, and a table that continues on the next page are joined back up. Each table is written as a Markdown table.</dd>
+        <dt>The check</dt>
+        <dd>After converting, Pare counts every figure in the PDF’s text and makes sure each one is in the output, and it flags any table where two values landed in the same column. Either way it tells you which pages to compare with the PDF. It can’t tell if a figure sits in the wrong column of an otherwise clean table, so for numbers you’ll rely on, a glance at the PDF is still worth it.</dd>
         <dt>When to keep the PDF</dt>
-        <dd>If the meaning lives in charts, diagrams, photos or a complicated table layout, send the PDF: the text version can’t see pictures, and tables come out as plain rows. Pare lists the pages that hold images so you can check. Scanned PDFs have no text to extract and can’t be converted here.</dd>
+        <dd>If the meaning lives in charts, diagrams or photos, send the PDF, or just those pages: the text version can’t see pictures. Pare lists the pages that hold images so you can check. Scanned PDFs have no text to extract and can’t be converted here.</dd>
       </dl>
     </Band>
   </div>

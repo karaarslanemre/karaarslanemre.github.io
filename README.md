@@ -153,16 +153,21 @@ After a change, rebuild its Open in Claude copy with `npm run build:claude -- te
 
 Pare (`/projects/pare/`) turns PDFs into clean text or Markdown that costs Claude fewer tokens to read, and shows the estimated saving for each file. When Claude reads a PDF it gets each page's text *and* an image of the page; the text version drops the images, running headers and footers, and page numbers, and joins lines back into paragraphs. Pages that contain pictures are flagged, since the text can't carry them.
 
+- **Tables, including financial statements.** Tables are found from where text sits on the page, not from a list of known layouts, so it works on any company's 10-K or 10-Q. Columns come from where right-aligned figures end; stacked and spanning headers ("Three Months Ended / September 30, / 2026") are put back together over each column; wrapped labels, rows split across lines, and tables continued on the next page are joined. Each table is written as a Markdown table.
+- **A check on every file.** Pare counts every figure in the PDF's text and confirms each one is in the output, and flags tables where two values landed in one column. It can't catch a figure that sits in the wrong column of an otherwise clean table, so the page suggests comparing figures you'll rely on with the PDF.
 - **No AI and no server.** Everything runs in the visitor's browser with PDF.js; nothing is uploaded.
 - **Estimates, not exact counts.** Text is counted at about 4 characters a token (30% more for Claude 4.7 and later). Page images follow Anthropic's 28 × 28-pixel rule, assuming each page is drawn at the largest size the model accepts, so the PDF figure is an upper estimate.
+
+It was tested on CoreWeave's and Alphabet's 10-Ks for 2025, Applied Digital's 10-K for fiscal 2026 and Eli Lilly's 10-Q for the third quarter of 2026: every figure carried over, and the financial statements, debt tables and MD&A tables matched the PDFs row for row.
 
 ### Changing it
 
 | What | Where |
 | ---- | ---- |
 | How PDFs are read and rebuilt into paragraphs, headings and lists | `src/pare/extract.ts` |
+| How tables are found, and their columns and headers worked out | `src/pare/table.ts` |
 | The token estimates | `src/pare/tokens.ts` |
-| The page's behavior (adding files, copy, download) | `src/pare/app.ts` |
+| The page's behavior (adding files, the check, copy, download) | `src/pare/app.ts` |
 | Look and feel | `src/styles/pare.css` |
 | Page text | `src/pages/projects/pare.astro` |
 
