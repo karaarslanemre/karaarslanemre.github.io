@@ -4,7 +4,7 @@
 // Markdown or plain text, and compared with what the PDF would cost Claude to
 // read (tokens.ts). Converted files can be copied or downloaded.
 
-import { PdfError, readPdf, render, type Extracted, type OutputOptions } from './extract';
+import { check, PdfError, readPdf, render, type Check, type Extracted, type OutputOptions } from './extract';
 import { estimate, type Estimate, type Tier } from './tokens';
 import { zip } from './zip';
 
@@ -13,6 +13,7 @@ interface Item {
   ex: Extracted;
   output: string;
   est: Estimate;
+  chk: Check;
 }
 
 const root = document.getElementById('pr')!;
@@ -51,7 +52,7 @@ function say(message: string, kind: 'info' | 'error' = 'info') {
 function build(ex: Extracted, id = crypto.randomUUID()): Item {
   const o = options();
   const output = render(ex, o);
-  return { id, ex, output, est: estimate(ex.rawText, ex.sizes, output, o.tier) };
+  return { id, ex, output, est: estimate(ex.rawText, ex.sizes, output, o.tier), chk: check(ex, output) };
 }
 
 function rebuildAll() {
@@ -109,7 +110,21 @@ function drawPreview() {
     <dt>As text</dt><dd>${num(est.text)} tokens<br /><span class="muted">${num(item.output.length)} characters</span></dd>
     <dt>Saved</dt><dd>${pct(est.saved)}</dd>`;
 
+  const { chk } = item;
+  const tables = chk.tables ? `, and ${num(chk.tables)} ${chk.tables === 1 ? 'table was' : 'tables were'} rebuilt as rows and columns` : '';
+  $('[data-check]').textContent = chk.missing
+    ? ''
+    : `Checked: all ${num(chk.total)} figures in the PDF are in the text${tables}.`;
+
   const warnings: string[] = [];
+  if (chk.missing) {
+    warnings.push(`${num(chk.missing)} of ${num(chk.total)} figures in the PDF aren’t in the text as written (for example ${chk.examples.slice(0, 3).join(', ')}). Check those against the PDF.`);
+  }
+  if (chk.doubtful.length) {
+    const pages = [...new Set(chk.doubtful.map((d) => d.page))];
+    const one = pages.length === 1;
+    warnings.push(`The ${one ? 'table' : 'tables'} on ${one ? 'page' : 'pages'} ${pageList(pages)} may have a value in the wrong column. Compare ${one ? 'it' : 'them'} with the PDF before relying on ${one ? 'it' : 'them'}.`);
+  }
   if (ex.imagePages.length) {
     const one = ex.imagePages.length === 1;
     warnings.push(`${one ? 'Page' : 'Pages'} ${pageList(ex.imagePages)} ${one ? 'has' : 'have'} pictures, which the text leaves out. If they carry meaning (a chart, a diagram), send the PDF instead, or just those pages.`);

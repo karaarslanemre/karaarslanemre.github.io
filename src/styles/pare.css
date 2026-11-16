@@ -122,6 +122,8 @@
 .pr-filename { overflow-wrap: anywhere; }
 .pr-warnings { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; max-width: 46rem; color: var(--pr-error); font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.4; }
 .pr-warnings:empty { display: none; }
+.pr-check { margin-bottom: 0.75rem; max-width: 46rem; font-family: var(--font-sans); font-size: 0.9375rem; }
+.pr-check:empty { display: none; }
 .pr-text {
   display: block;
   width: 100%;
