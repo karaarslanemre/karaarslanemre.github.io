@@ -83,7 +83,6 @@
 .pr-check input { accent-color: var(--ink); }
 .pr-check .muted { font-size: 0.9375rem; }
 
-.pr-example-line { margin-top: 1.75rem; font-family: var(--font-sans); font-size: 1.0625rem; }
 .pr-status { margin-top: 1.25rem; font-family: var(--font-sans); font-size: 1rem; max-width: 46rem; }
 .pr-status[data-kind="error"] { color: var(--pr-error); }
 .pr-fine { margin-top: 3rem; max-width: 40em; color: var(--muted); font-size: 1.0625rem; line-height: 1.45; }

@@ -163,7 +163,6 @@ Pare (`/projects/pare/`) turns PDFs into clean text or Markdown that costs Claud
 | How PDFs are read and rebuilt into paragraphs, headings and lists | `src/pare/extract.ts` |
 | The token estimates | `src/pare/tokens.ts` |
 | The page's behavior (adding files, copy, download) | `src/pare/app.ts` |
-| The example PDF | `public/pare/example.pdf`, built by `python3 scripts/make-pare-example.py public/pare/example.pdf` (needs `reportlab` and `pillow`) |
 | Look and feel | `src/styles/pare.css` |
 | Page text | `src/pages/projects/pare.astro` |
 
@@ -180,7 +179,7 @@ Fonts and colors are set at the top of `src/styles/global.css`. The font files l
 | Projects | `src/content/projects/` (tiles), `src/pages/projects/` (pages) |
 | Strata | `src/strata/`, `worker/` (see Strata above) |
 | Tenor | `src/tenor/` |
-| Pare | `src/pare/`, `public/pare/` |
+| Pare | `src/pare/` |
 | About text | `src/data/about.md` |
 | Name, notes, email, links | `src/data/site.json` |
 | Fonts and colors | `src/styles/global.css` |

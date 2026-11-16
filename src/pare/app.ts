@@ -155,18 +155,6 @@ async function addFiles(files: File[]) {
   if (added) document.getElementById('pr-results')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
 
-async function loadExample() {
-  say('Reading the example…');
-  try {
-    const res = await fetch('/pare/example.pdf');
-    if (!res.ok) throw new Error(String(res.status));
-    const blob = await res.blob();
-    await addFiles([new File([blob], 'Harbor Coffee market report.pdf', { type: 'application/pdf' })]);
-  } catch {
-    say('The example couldn’t be loaded. Try one of your own PDFs.', 'error');
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Saving
 // ---------------------------------------------------------------------------
@@ -240,7 +228,6 @@ form.addEventListener('submit', (e) => e.preventDefault());
 
 root.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
-  if (t.closest('[data-example]')) return void loadExample();
   const sel = t.closest<HTMLElement>('[data-select]');
   if (sel) {
     state.selected = sel.dataset.select!;
