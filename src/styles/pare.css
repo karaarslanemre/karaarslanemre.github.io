@@ -1,0 +1,154 @@
+/*
+  Pare. Same palette, fonts and hairline grid as the rest of the site (see
+  global.css), and the same controls as Tenor.
+*/
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:root { --pr-error: #7a2e1f; }
+
+.pr button, .pr select { font: inherit; color: inherit; }
+.pr > .band > .band-main, #pr-results > .band > .band-main { border-top: 1px solid var(--line); }
+#pr-results > .band > .band-note { border-top: 1px solid var(--line); }
+
+/* Shared controls */
+.pr-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-sans) !important;
+  font-size: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-align: left;
+}
+.pr-link:hover { text-decoration-color: var(--line); }
+.pr-button {
+  padding: 0.6rem 1.15rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 1rem !important;
+  cursor: pointer;
+}
+.pr-button:hover { background: transparent; color: var(--ink) !important; }
+.pr button:focus-visible, .pr input:focus-visible, .pr select:focus-visible, .pr textarea:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+.pr-label { font-family: var(--font-sans); font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.04em; }
+.pr-small { font-size: 0.9375rem; line-height: 1.4; }
+
+/* ---------- Start ---------- */
+.pr-legend { display: flex; flex-direction: column; gap: 0.8rem; }
+.pr-legend li { line-height: 1.25; }
+.pr-legend strong { font-weight: 500; font-family: var(--font-sans); font-size: 0.9375rem; }
+.pr-legend .muted { font-size: 0.9375rem; }
+
+.pr-start { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; max-width: 62rem; }
+.pr-tile { display: flex; flex-direction: column; gap: 1rem; min-height: 19rem; padding: 1rem 1.125rem 1.25rem; border: 1px solid var(--line); }
+.pr-tile-top { display: flex; justify-content: space-between; gap: 1rem; font-family: var(--font-sans); font-size: var(--fs-label); }
+.pr-tile-top span:last-child { color: var(--muted); }
+.pr-tile-title { font-family: var(--font-sans); font-size: var(--fs-title); line-height: 1.12; letter-spacing: -0.015em; }
+.pr-tile-desc { color: var(--muted); font-size: 1.0625rem; line-height: 1.4; max-width: 22em; }
+.pr-drop { justify-content: space-between; cursor: pointer; }
+.pr-drop .pr-tile-body { display: flex; flex-direction: column; gap: 0.75rem; }
+.pr-drop:hover, .pr-drop.is-over { background: var(--raise); border-color: var(--ink); }
+.pr-drop:focus-within { outline: 1px solid var(--ink); outline-offset: 3px; }
+
+.pr-options { gap: 1.25rem; font-family: var(--font-sans); font-size: 1rem; }
+.pr-field { display: flex; flex-direction: column; gap: 0.45rem; border: 0; padding: 0; margin: 0; }
+.pr-field legend, .pr-field > span { margin-bottom: 0.1rem; color: var(--muted); font-size: 0.9375rem; padding: 0; }
+.pr-field select {
+  align-self: flex-start;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--raise);
+}
+.pr-check { display: flex; align-items: baseline; gap: 0.5rem; line-height: 1.35; cursor: pointer; }
+.pr-check input { accent-color: var(--ink); }
+.pr-check .muted { font-size: 0.9375rem; }
+
+.pr-example-line { margin-top: 1.75rem; font-family: var(--font-sans); font-size: 1.0625rem; }
+.pr-status { margin-top: 1.25rem; font-family: var(--font-sans); font-size: 1rem; max-width: 46rem; }
+.pr-status[data-kind="error"] { color: var(--pr-error); }
+.pr-fine { margin-top: 3rem; max-width: 40em; color: var(--muted); font-size: 1.0625rem; line-height: 1.45; }
+
+/* ---------- Results ---------- */
+.pr-big { margin: 0.35rem 0 0.5rem; font-family: var(--font-sans); font-size: var(--fs-title); line-height: 1.1; letter-spacing: -0.015em; }
+.pr-files-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem 2rem; }
+.pr-actions { display: flex; align-items: center; gap: 1.25rem; font-family: var(--font-sans); font-size: 1rem; }
+.pr-table-wrap { overflow-x: auto; max-width: 62rem; }
+.pr-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.pr-table th, .pr-table td { padding: 0.6rem 1rem 0.6rem 0; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.pr-table thead th { color: var(--muted); font-weight: 400; font-size: 0.9375rem; border-top: 1px solid var(--line); }
+.pr-table tbody th { font-weight: 400; white-space: normal; }
+.pr-table .num { text-align: right; }
+.pr-table strong { font-weight: 500; }
+.pr-table tr.is-current { background: var(--raise); }
+.pr-table tr.is-current th { padding-left: 0.5rem; }
+.pr-name { overflow-wrap: anywhere; }
+.pr-row-actions { width: 2rem; text-align: right; padding-right: 0 !important; }
+.pr-x {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem !important;
+  line-height: 1;
+}
+.pr-x:hover { border-color: var(--line); }
+.pr-hint { margin-top: 0.75rem; color: var(--muted); font-family: var(--font-sans); font-size: 0.9375rem; }
+
+.pr-breakdown { display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.75rem; font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.35; }
+.pr-breakdown dt { color: var(--muted); margin-top: 0.6rem; }
+.pr-breakdown dd { margin: 0; }
+.pr-filename { overflow-wrap: anywhere; }
+.pr-warnings { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; max-width: 46rem; color: var(--pr-error); font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.4; }
+.pr-warnings:empty { display: none; }
+.pr-text {
+  display: block;
+  width: 100%;
+  max-width: 62rem;
+  min-height: 32rem;
+  resize: vertical;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* ---------- Method ---------- */
+.pr-method { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 1.1rem 2rem; max-width: 56rem; }
+.pr-method dt { font-family: var(--font-sans); font-size: 1.0625rem; }
+.pr-method dd { margin: 0; line-height: 1.5; }
+
+@media (max-width: 46rem) {
+  .pr-start { grid-template-columns: minmax(0, 1fr); }
+  .pr-tile { min-height: 0; }
+  .pr-drop { min-height: 11rem; }
+  .pr-method { grid-template-columns: minmax(0, 1fr); gap: 0.35rem; }
+  .pr-method dd { margin-bottom: 1rem; }
+  .pr-table th, .pr-table td { padding-right: 0.6rem; }
+}

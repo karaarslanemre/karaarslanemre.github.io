@@ -1,0 +1,174 @@
+---
+import Base from '../../layouts/Base.astro';
+import Band from '../../components/Band.astro';
+import Figure from '../../components/Figure.astro';
+import MarginArt from '../../components/MarginArt.astro';
+import '../../styles/pare.css';
+
+// Pare turns PDFs into lean text for Claude. Everything runs in the visitor's
+// browser: the PDF is read with PDF.js (src/pare/extract.ts), and the token
+// estimates follow Anthropic's published rules (src/pare/tokens.ts).
+
+// The page talks to nothing but itself.
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+const withCsp = !process.env.ZR_PREVIEW;
+
+const description = 'Turn PDFs into clean text that costs Claude far fewer tokens to read. See the estimate before and after, then download.';
+const removes = [
+  { name: 'Page images', desc: 'a PDF sends a picture of every page, often the biggest cost' },
+  { name: 'Headers and footers', desc: 'the same lines repeated on every page' },
+  { name: 'Page numbers', desc: 'and stray URLs in the margins' },
+  { name: 'Broken lines', desc: 'lines and hyphenated words joined back into paragraphs' },
+];
+---
+<Base title="Pare" description={description} active="projects">
+  {withCsp && <meta slot="head" http-equiv="Content-Security-Policy" content={csp} />}
+
+  <Band hero center>
+    <Fragment slot="note">
+      <p><a href="/projects/">← All projects</a></p>
+      <p class="muted">Project 03<br />November 2026</p>
+    </Fragment>
+    <Fragment slot="margin"><MarginArt kind="pages" /></Fragment>
+    <div class="hero-wrap">
+      <h1 class="hero">Pare</h1>
+      <Figure kind="orbit" />
+    </div>
+    <div class="lead">
+      <p>When Claude reads a PDF, it gets each page twice: the text, and a picture of the page. For reports, papers and contracts, where the words are what matter, the picture is mostly cost. Pare turns PDFs into clean text or Markdown and shows how many tokens you save.</p>
+    </div>
+  </Band>
+
+  <div id="pr" class="pr">
+    <Band id="pr-input">
+      <Fragment slot="note">
+        <p class="pr-label">What it removes</p>
+        <ul class="pr-legend">
+          {removes.map((m) => <li><strong>{m.name}</strong><br /><span class="muted">{m.desc}</span></li>)}
+        </ul>
+      </Fragment>
+
+      <div class="band-head"><h2 class="h2">Start with a PDF.</h2></div>
+
+      <div class="pr-start">
+        <label class="pr-tile pr-drop" id="pr-drop" for="pr-file">
+          <span class="pr-tile-top"><span>(A)</span><span>PDF</span></span>
+          <span class="pr-tile-body">
+            <span class="pr-tile-title">Upload PDFs</span>
+            <span class="pr-tile-desc">Drop one or many. They’re read on your own device and never uploaded.</span>
+          </span>
+          <input type="file" id="pr-file" class="visually-hidden" accept="application/pdf,.pdf" multiple />
+        </label>
+
+        <form class="pr-tile pr-options" id="pr-options">
+          <span class="pr-tile-top"><span>(B)</span><span>Settings</span></span>
+          <fieldset class="pr-field">
+            <legend>Write it as</legend>
+            <label class="pr-check"><input type="radio" name="format" value="markdown" checked /> Markdown <span class="muted">(keeps headings and lists)</span></label>
+            <label class="pr-check"><input type="radio" name="format" value="plain" /> Plain text</label>
+          </fieldset>
+          <label class="pr-field">
+            <span>Estimate tokens for</span>
+            <select name="tier">
+              <option value="high" selected>Claude 4.7 and later</option>
+              <option value="standard">Earlier Claude models</option>
+            </select>
+          </label>
+          <label class="pr-check"><input type="checkbox" name="markers" /> Mark where each page starts <span class="muted">(handy for citing pages)</span></label>
+        </form>
+      </div>
+
+      <p class="pr-example-line">
+        Or try it on an example: <button type="button" class="pr-link" data-example>a three-page made-up market report →</button>
+      </p>
+
+      <p id="pr-status" class="pr-status" role="status" aria-live="polite" hidden></p>
+
+      <div class="pr-fine">
+        <p>
+          Everything runs in your browser. Token counts are estimates (see <a class="pr-link" href="#pr-method">how they’re worked out</a>);
+          for an exact figure, use Anthropic’s token-counting API.
+        </p>
+      </div>
+    </Band>
+
+    <div id="pr-results" hidden>
+      <Band id="pr-summary">
+        <Fragment slot="note">
+          <p class="pr-label">In total</p>
+          <p class="pr-big" data-total-saved></p>
+          <p class="muted pr-small" data-total-line></p>
+        </Fragment>
+
+        <div class="band-head pr-files-head">
+          <h2 class="h2">What you save.</h2>
+          <div class="pr-actions">
+            <button type="button" class="pr-button" data-zip>Download all</button>
+            <button type="button" class="pr-link" data-clear>Remove all</button>
+          </div>
+        </div>
+        <div class="pr-table-wrap">
+          <table class="pr-table">
+            <thead>
+              <tr>
+                <th scope="col">File</th>
+                <th scope="col" class="num">Pages</th>
+                <th scope="col" class="num">As a PDF</th>
+                <th scope="col" class="num">As text</th>
+                <th scope="col" class="num">Saved</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody data-rows></tbody>
+          </table>
+        </div>
+        <p class="pr-hint">Tokens, estimated. Pick a file to see its text.</p>
+      </Band>
+
+      <Band id="pr-preview">
+        <Fragment slot="note">
+          <p class="pr-label">This file</p>
+          <dl class="pr-breakdown" data-breakdown></dl>
+        </Fragment>
+
+        <div class="band-head pr-files-head">
+          <h2 class="h2 pr-filename" data-preview-title></h2>
+          <div class="pr-actions">
+            <button type="button" class="pr-button" data-copy>Copy text</button>
+            <button type="button" class="pr-link" data-download>Download</button>
+          </div>
+        </div>
+        <ul class="pr-warnings" data-warnings></ul>
+        <textarea class="pr-text" data-preview readonly spellcheck="false" aria-label="Converted text"></textarea>
+      </Band>
+    </div>
+
+    <Band id="pr-method">
+      <Fragment slot="note"><p class="pr-label">Method</p></Fragment>
+      <div class="band-head"><h2 class="h2">How it’s worked out.</h2></div>
+      <dl class="pr-method">
+        <dt>As a PDF</dt>
+        <dd>Anthropic’s documentation says a PDF is sent to Claude as each page’s extracted text plus an image of each page. Text runs about 4 characters a token, and Claude 4.7 and later count about 30% more tokens for the same text. An image costs one token per 28 × 28 pixel square. The docs don’t say how large a page is drawn, so Pare assumes the largest the model accepts (about 4,700 tokens a page for Claude 4.7 and later, 1,500 for earlier models). Treat the PDF figure as an upper estimate.</dd>
+        <dt>As text</dt>
+        <dd>The cleaned text, counted the same way. Repeated headers and footers, page numbers and margin URLs are dropped; lines are joined back into paragraphs; larger type becomes headings.</dd>
+        <dt>When to keep the PDF</dt>
+        <dd>If the meaning lives in charts, diagrams, photos or a complicated table layout, send the PDF: the text version can’t see pictures, and tables come out as plain rows. Pare lists the pages that hold images so you can check. Scanned PDFs have no text to extract and can’t be converted here.</dd>
+      </dl>
+    </Band>
+  </div>
+
+  <script>
+    import '../../pare/app.ts';
+  </script>
+</Base>

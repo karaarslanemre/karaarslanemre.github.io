@@ -1,6 +1,6 @@
 # emrekaraarslan.com
 
-Emre Karaarslan's personal site: an About me page, a log of published writing, the books he's reading, and projects, starting with Strata.
+Emre Karaarslan's personal site: an About me page, a log of published writing, the books he's reading, and projects: Strata, Tenor and Pare.
 
 Once it's set up, you update the site from **Pages CMS**, a free web editor. Every save publishes the change to the live site within a minute or two. You don't need Claude or any code for day-to-day edits.
 
@@ -149,6 +149,24 @@ Tenor (`/projects/tenor/`) reads earnings call transcripts (PDFs or pasted text,
 
 After a change, rebuild its Open in Claude copy with `npm run build:claude -- tenor` and ask Claude to republish it. `npm run build:claude -- tenor --site` builds a single-file preview of the page as it looks on this site, which Claude can publish privately so you can check a change before it goes live.
 
+## Pare
+
+Pare (`/projects/pare/`) turns PDFs into clean text or Markdown that costs Claude fewer tokens to read, and shows the estimated saving for each file. When Claude reads a PDF it gets each page's text *and* an image of the page; the text version drops the images, running headers and footers, and page numbers, and joins lines back into paragraphs. Pages that contain pictures are flagged, since the text can't carry them.
+
+- **No AI and no server.** Everything runs in the visitor's browser with PDF.js; nothing is uploaded.
+- **Estimates, not exact counts.** Text is counted at about 4 characters a token (30% more for Claude 4.7 and later). Page images follow Anthropic's 28 × 28-pixel rule, assuming each page is drawn at the largest size the model accepts, so the PDF figure is an upper estimate.
+
+### Changing it
+
+| What | Where |
+| ---- | ---- |
+| How PDFs are read and rebuilt into paragraphs, headings and lists | `src/pare/extract.ts` |
+| The token estimates | `src/pare/tokens.ts` |
+| The page's behavior (adding files, copy, download) | `src/pare/app.ts` |
+| The example PDF | `public/pare/example.pdf`, built by `python3 scripts/make-pare-example.py public/pare/example.pdf` (needs `reportlab` and `pillow`) |
+| Look and feel | `src/styles/pare.css` |
+| Page text | `src/pages/projects/pare.astro` |
+
 ## Changing fonts or colors
 
 Fonts and colors are set at the top of `src/styles/global.css`. The font files load from Google Fonts through the link in `src/layouts/Base.astro`. To try a different font, pick one on [fonts.google.com](https://fonts.google.com), update the link, and change the name in `global.css`. You can edit both files directly on GitHub with the pencil icon.
@@ -161,6 +179,8 @@ Fonts and colors are set at the top of `src/styles/global.css`. The font files l
 | Books | `src/content/books/` (one file per book) |
 | Projects | `src/content/projects/` (tiles), `src/pages/projects/` (pages) |
 | Strata | `src/strata/`, `worker/` (see Strata above) |
+| Tenor | `src/tenor/` |
+| Pare | `src/pare/`, `public/pare/` |
 | About text | `src/data/about.md` |
 | Name, notes, email, links | `src/data/site.json` |
 | Fonts and colors | `src/styles/global.css` |
